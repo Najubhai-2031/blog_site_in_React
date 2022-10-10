@@ -6,10 +6,9 @@ import {
   query,
   updateDoc,
   doc,
+  runTransaction,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
-
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Form from "react-bootstrap/Form";
@@ -22,6 +21,7 @@ import "./style.css";
 const Home = () => {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
+  const [id, setId] = useState("");
   const [data, setData] = useState([]);
 
   const navigate = useNavigate();
@@ -61,6 +61,41 @@ const Home = () => {
       setTitle("");
       setDesc("");
       toast.success("Blog Added Successfully");
+    }
+  };
+
+  const handleGetDataforEdit = (id, Title, Description) => {
+    setTitle(Title);
+    setDesc(Description);
+    setId(id);
+    document.getElementById("update-btn").style.display = "block";
+    document.getElementById("btn").style.display = "none";
+  };
+
+  const handleEditedAddData = async () => {
+    const sfDocRef = doc(db, "Blog", id);
+    document.getElementById("update-btn").style.display = "none";
+    document.getElementById("btn").style.display = "block";
+    try {
+      await runTransaction(db, async (transaction) => {
+        const sfDoc = await transaction.get(sfDocRef);
+        if (!sfDoc.exists()) {
+          throw "Document does not exist!";
+        }
+
+        const newTitle = (sfDoc.data().Title = title);
+        const newDescr = (sfDoc.data().Description = desc);
+        transaction.update(sfDocRef, {
+          Title: newTitle,
+          Description: newDescr,
+        });
+      });
+      setTitle("");
+      setDesc("");
+      getBlogs();
+      toast.success("Blog Updated Successefully");
+    } catch (e) {
+      console.log("Transaction failed: ", e);
     }
   };
 
@@ -106,8 +141,15 @@ const Home = () => {
               controlId="formBasicCheckbox"
             ></Form.Group>
             <div className="d-grid gap-2">
-              <Button variant="outline-primary" onClick={handleSubmit}>
+              <Button id="btn" variant="outline-primary" onClick={handleSubmit}>
                 Add Blog
+              </Button>
+              <Button
+                id="update-btn"
+                variant="outline-primary"
+                onClick={handleEditedAddData}
+              >
+                Update
               </Button>
             </div>
           </Form>
@@ -116,7 +158,6 @@ const Home = () => {
       {/* Map Method for data Showing */}
       <div className="cards">
         {data.map((item) => {
-          // console.log("item", item)
           return (
             <div className="cards-inner">
               <Card style={{ width: "18rem", textAlign: "center" }}>
@@ -124,10 +165,22 @@ const Home = () => {
                   <Card.Title>{item.Title}</Card.Title>
                   <Card.Text>{item.Description}</Card.Text>
                   <Button
-                    variant="primary"
-                    onClick={() => navigate(`Blog/${item?.id}`)}
+                    variant="primary me-2"
+                    onClick={() => navigate(`Blog/${item.id}`)}
                   >
-                    Go somewhere
+                    Blog Details
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={() =>
+                      handleGetDataforEdit(
+                        item.id,
+                        item.Title,
+                        item.Description
+                      )
+                    }
+                  >
+                    Edit Blog
                   </Button>
                 </Card.Body>
               </Card>
