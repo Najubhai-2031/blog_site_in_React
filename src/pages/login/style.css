@@ -1,0 +1,25 @@
+.error-message {
+  color: red !important;
+}
+
+.main-div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.forSignup p {
+  color: blue;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.forSignup{
+    display: flex;
+    flex-direction: column;
+}
+
+.main-div h3{
+    text-align: center;
+}
