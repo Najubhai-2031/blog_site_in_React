@@ -1,12 +1,10 @@
 import React from "react";
-import { Outlet } from "react-router";
+import { Navigate, Outlet } from "react-router";
 
 const AuthenticationLayout = () => {
-  return (
-    <div>
-      <Outlet />
-    </div>
-  );
+  const user = localStorage.getItem("user");
+
+  return <div>{!user ? <Outlet /> : <Navigate to="/" />}</div>;
 };
 
 export default AuthenticationLayout;

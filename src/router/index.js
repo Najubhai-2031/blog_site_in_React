@@ -1,3 +1,4 @@
+import AllProfiles from "../Components/UserProfile";
 import BlogDetails from "../Components/BlogDetails";
 import AuthenticationLayout from "../Components/layout/AuthenticationLayout";
 import MainLayout from "../Components/layout/MainLayout";
@@ -6,6 +7,7 @@ import ForgotPass from "../pages/forgotPass";
 import Home from "../pages/home";
 import Login from "../pages/login";
 import Register from "../pages/register";
+import AboutUs from "../Components/AboutUs";
 
 const Router = [
   {
@@ -15,6 +17,8 @@ const Router = [
       { path: "/", element: <Home /> },
       { path: "Profile", element: <Profile /> },
       { path: "/Blog/:id", element: <BlogDetails /> },
+      { path: "/AllProfiles/:uid", element: <AllProfiles /> },
+      { path: "AboutUs", element: <AboutUs /> },
     ],
   },
   {

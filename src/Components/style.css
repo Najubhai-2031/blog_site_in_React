@@ -3,3 +3,36 @@
   align-items: center;
   justify-content: center;
 }
+
+#frm {
+  display: none;
+}
+
+.main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.navbar {
+  box-shadow: 2px 2px 10px lightblue;
+  margin-bottom: 10px;
+}
+
+.navbar .name {
+  font-size: 15px;
+}
+
+.navbar .drop-menu {
+  size: 20px;
+}
+
+.me-auto a {
+  text-decoration: none;
+  color: #737373;
+}
+
+.logo a{
+  color: black !important;
+  text-decoration: none;
+}

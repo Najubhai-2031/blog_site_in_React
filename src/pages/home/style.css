@@ -3,6 +3,10 @@
   padding: 0;
 }
 
+.div-body {
+  width: 100%;
+}
+
 .cards {
   display: grid;
   grid-template-columns: auto auto auto;
@@ -16,7 +20,79 @@
   align-items: center;
 }
 
+.main form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.main form input,
+textarea,
+button {
+  height: 50px;
+  border-radius: none;
+}
+
+.main button {
+  margin-left: 10px;
+  margin-top: -15px;
+}
+
+.main h3 {
+  text-align: center;
+}
+
 .cards-inner {
   margin-top: 30px;
   margin-right: 20px;
+}
+
+#update-btn {
+  display: none;
+}
+
+.cards-inner .text {
+  text-align: left;
+}
+.cards-inner .text b {
+  text-align: left;
+  margin-left: 5px;
+}
+
+.read-more {
+  text-align: right;
+  color: rgb(80, 80, 169);
+}
+
+.last-text{
+  font-size: 13px !important;
+}
+
+.read-more:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.content-div {
+  margin-top: 10px;
+}
+
+.title-div {
+  height: 10vh;
+}
+.profile-div {
+  height: 3vh;
+}
+
+.description-div {
+  height: 15vh;
+}
+
+.readmore-div {
+  height: 3vh;
+}
+
+.readmore-div {
+  display: grid;
+  grid-template-columns: auto auto;
 }

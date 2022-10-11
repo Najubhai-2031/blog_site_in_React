@@ -14,24 +14,25 @@ const Profile = () => {
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        setName(user.displayName)
+        setName(user.displayName);
         setEmail(user.email);
       } else {
-        
       }
     });
   }, [auth]);
 
   return (
     <React.Fragment>
-      <div className="profile">
+      <div className="profile text-center">
         <Card style={{ width: "18rem" }}>
           <Card.Body>
             <Card.Title>Name: {name}</Card.Title>
             <Card.Text>Your Email: {email}</Card.Text>
-            <Button variant="primary" onClick={() => navigate("/")}>
-              Go to Home Page
-            </Button>
+            <div className="text-center">
+              <Button variant="primary" onClick={() => navigate("/")}>
+                Go to Home Page
+              </Button>
+            </div>
           </Card.Body>
         </Card>
       </div>
