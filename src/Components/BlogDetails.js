@@ -10,6 +10,7 @@ import "./style.css";
 
 const BlogDetails = () => {
   const { id } = useParams();
+  console.log("id", id)
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");

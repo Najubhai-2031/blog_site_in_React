@@ -14,7 +14,6 @@ const Header = () => {
   const logout = () => {
     signOut(auth)
       .then(() => {
-        console.log("first");
         localStorage.clear();
         navigate("/auth/login");
       })

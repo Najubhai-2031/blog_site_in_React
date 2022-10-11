@@ -7,7 +7,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth, db } from "../../firebase/config";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, doc, setDoc } from "firebase/firestore";
 
 const Register = (props) => {
   const [name, setName] = useState("");
@@ -24,6 +24,7 @@ const Register = (props) => {
     if (isValid) {
       createUserWithEmailAndPassword(auth, email, pass, { displayName: "sldj" })
         .then((response) => {
+          console.log("response", response);
           updateProfile(auth.currentUser, {
             displayName: name,
           })
@@ -35,17 +36,17 @@ const Register = (props) => {
               // An error occurred
               // ...
             });
-          addDoc(collection(db, "users"), {
-            name: name,
+          setDoc(doc(db, "users", response?.user?.uid), {
             email: email,
             displayName: name,
+            id: response?.user?.uid,
           }).then((docResponse) => {
             console.log("docResponse", docResponse);
             toast.success("Registration Successfull");
           });
         })
         .catch((error) => {
-          toast.error(error)
+          toast.error(error);
         });
     }
   };

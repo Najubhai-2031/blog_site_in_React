@@ -1,3 +1,4 @@
+import AllProfiles from "../Components/UserProfile";
 import BlogDetails from "../Components/BlogDetails";
 import AuthenticationLayout from "../Components/layout/AuthenticationLayout";
 import MainLayout from "../Components/layout/MainLayout";
@@ -15,6 +16,7 @@ const Router = [
       { path: "/", element: <Home /> },
       { path: "Profile", element: <Profile /> },
       { path: "/Blog/:id", element: <BlogDetails /> },
+      { path: "/AllProfiles/:uid", element: <AllProfiles /> },
     ],
   },
   {

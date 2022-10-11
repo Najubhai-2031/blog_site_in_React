@@ -27,3 +27,8 @@
 #update-btn{
   display: none;
 }
+
+.cards-inner .text{
+  text-align: left;
+  text-decoration: underline;
+}
