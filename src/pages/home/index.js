@@ -6,7 +6,6 @@ import {
   query,
   updateDoc,
   doc,
-  runTransaction,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
@@ -21,7 +20,6 @@ import "./style.css";
 const Home = () => {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
-  const [id, setId] = useState("");
   const [data, setData] = useState([]);
 
   const navigate = useNavigate();
@@ -61,41 +59,6 @@ const Home = () => {
       setTitle("");
       setDesc("");
       toast.success("Blog Added Successfully");
-    }
-  };
-
-  const handleGetDataforEdit = (id, Title, Description) => {
-    setTitle(Title);
-    setDesc(Description);
-    setId(id);
-    document.getElementById("update-btn").style.display = "block";
-    document.getElementById("btn").style.display = "none";
-  };
-
-  const handleEditedAddData = async () => {
-    const sfDocRef = doc(db, "Blog", id);
-    document.getElementById("update-btn").style.display = "none";
-    document.getElementById("btn").style.display = "block";
-    try {
-      await runTransaction(db, async (transaction) => {
-        const sfDoc = await transaction.get(sfDocRef);
-        if (!sfDoc.exists()) {
-          throw "Document does not exist!";
-        }
-
-        const newTitle = (sfDoc.data().Title = title);
-        const newDescr = (sfDoc.data().Description = desc);
-        transaction.update(sfDocRef, {
-          Title: newTitle,
-          Description: newDescr,
-        });
-      });
-      setTitle("");
-      setDesc("");
-      getBlogs();
-      toast.success("Blog Updated Successefully");
-    } catch (e) {
-      console.log("Transaction failed: ", e);
     }
   };
 
@@ -144,13 +107,6 @@ const Home = () => {
               <Button id="btn" variant="outline-primary" onClick={handleSubmit}>
                 Add Blog
               </Button>
-              <Button
-                id="update-btn"
-                variant="outline-primary"
-                onClick={handleEditedAddData}
-              >
-                Update
-              </Button>
             </div>
           </Form>
         </div>
@@ -169,18 +125,6 @@ const Home = () => {
                     onClick={() => navigate(`Blog/${item.id}`)}
                   >
                     Blog Details
-                  </Button>
-                  <Button
-                    variant="primary"
-                    onClick={() =>
-                      handleGetDataforEdit(
-                        item.id,
-                        item.Title,
-                        item.Description
-                      )
-                    }
-                  >
-                    Edit Blog
                   </Button>
                 </Card.Body>
               </Card>

@@ -14,6 +14,8 @@ const Header = () => {
   const logout = () => {
     signOut(auth)
       .then(() => {
+        console.log("first");
+        localStorage.clear();
         navigate("/auth/login");
       })
       .catch((error) => {});
@@ -34,15 +36,15 @@ const Header = () => {
       <Container>
         <Navbar.Brand href="#home">Stack Summation</Navbar.Brand>
         <Navbar.Toggle />
-         <Form className="d-flex">
-            <Form.Control
-              type="search"
-              placeholder="Search"
-              className="me-2"
-              aria-label="Search"
-            />
-            <Button variant="outline-success">Search</Button>
-          </Form>
+        <Form className="d-flex">
+          <Form.Control
+            type="search"
+            placeholder="Search"
+            className="me-2"
+            aria-label="Search"
+          />
+          <Button variant="outline-success">Search</Button>
+        </Form>
         <Navbar.Collapse className="justify-content-end">
           <Dropdown>
             <Dropdown.Toggle variant="success" id="dropdown-basic">

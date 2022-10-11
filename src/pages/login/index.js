@@ -19,17 +19,20 @@ const Login = (props) => {
     let isValid = loginValidation();
     if (isValid) {
       signInWithEmailAndPassword(auth, email, pass)
-      .then((userCredential) => {
-        // Signed in 
-        const user = userCredential.user;
-        console.log(user)
-        toast.success("Login Successfull");
-        // ...
-      })
-      .catch((error) => {
-        // const errorCode = error.code;
-        // const errorMessage = error.message;
-      });
+        .then((userCredential) => {
+          localStorage.setItem("user", JSON.stringify(userCredential));
+          const user = userCredential.user;
+          console.log(user);
+          toast.success("Welcome Back!");
+          setTimeout(() => {
+            navigate("/");
+          }, 1000);
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          toast.error(`${errorCode} - ${errorMessage}`);
+        });
     }
   };
 
@@ -65,7 +68,7 @@ const Login = (props) => {
   return (
     <React.Fragment>
       <div className="main-div">
-      <ToastContainer />
+        <ToastContainer />
         <Form onSubmit={handleSubmit}>
           <div>
             <h3>Sign in</h3>
