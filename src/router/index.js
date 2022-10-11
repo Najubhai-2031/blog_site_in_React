@@ -7,6 +7,7 @@ import ForgotPass from "../pages/forgotPass";
 import Home from "../pages/home";
 import Login from "../pages/login";
 import Register from "../pages/register";
+import AboutUs from "../Components/AboutUs";
 
 const Router = [
   {
@@ -17,6 +18,7 @@ const Router = [
       { path: "Profile", element: <Profile /> },
       { path: "/Blog/:id", element: <BlogDetails /> },
       { path: "/AllProfiles/:uid", element: <AllProfiles /> },
+      { path: "AboutUs", element: <AboutUs /> },
     ],
   },
   {

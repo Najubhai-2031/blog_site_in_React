@@ -5,12 +5,11 @@ import { db } from "../firebase/config";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { toast, ToastContainer } from "react-toastify";
-import { Card } from "react-bootstrap";
+import { Card, Container } from "react-bootstrap";
 import "./style.css";
 
 const BlogDetails = () => {
   const { id } = useParams();
-  console.log("id", id)
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
@@ -66,7 +65,6 @@ const BlogDetails = () => {
   };
   const handleDeleteBlog = async (Id) => {
     let confirmationDelete = window.confirm("Are You Sure?");
-    console.log("confirmationDelete", confirmationDelete);
     if (confirmationDelete === true) {
       toast.success("Blog Deleted Successefully");
       await deleteDoc(doc(db, "Blog", Id));
@@ -86,9 +84,6 @@ const BlogDetails = () => {
       <div id="frm">
         <div className="main">
           <Form>
-            <div>
-              <h3>Update Blog</h3>
-            </div>
             <Form.Group className="mb-3" controlId="formBasicTitle">
               <Form.Control
                 type="text"
@@ -131,26 +126,31 @@ const BlogDetails = () => {
       </div>
       <div className="cards">
         <div className="cards-inner">
-          <Card style={{ width: "18rem", textAlign: "center" }}>
-            <Card.Body>
-              <Card.Title>{data.Title}</Card.Title>
-              <Card.Text>{data.Description}</Card.Text>
-              <Button
-                variant="primary me-2"
-                onClick={() => handleDeleteBlog(data.id)}
-              >
-                Delete Blog
-              </Button>
-              <Button
-                variant="primary"
-                onClick={() =>
-                  handleGetDataforEdit(data.Title, data.Description)
-                }
-              >
-                Edit Blog
-              </Button>
-            </Card.Body>
-          </Card>
+          <Container>
+            <Card>
+              {/* <Card.Img variant="top" src="holder.js/100px180" /> */}
+              <Card.Body>
+                <Card.Title>{data.Title}</Card.Title>
+                <Card.Text>{data.Description}</Card.Text>
+                <div className="text-center">
+                  <Button
+                    variant="primary me-2"
+                    onClick={() => handleDeleteBlog(data.id)}
+                  >
+                    Delete Blog
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={() =>
+                      handleGetDataforEdit(data.Title, data.Description)
+                    }
+                  >
+                    Edit Blog
+                  </Button>
+                </div>
+              </Card.Body>
+            </Card>
+          </Container>
         </div>
       </div>
     </React.Fragment>

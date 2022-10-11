@@ -1,4 +1,5 @@
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { ArrowRight } from "react-bootstrap-icons";
 import {
   addDoc,
   collection,
@@ -9,7 +10,7 @@ import {
   doc,
   getDoc,
 } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Container } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
@@ -21,6 +22,7 @@ import { db } from "../../firebase/config";
 import "./style.css";
 
 const Home = () => {
+  const getValue = useRef();
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [uId, setUId] = useState("");
@@ -100,13 +102,10 @@ const Home = () => {
   if (!isLoading) {
     return (
       <React.Fragment>
-        <Container fluid>
-          <ToastContainer />
-          <div className="main">
+        <div className="main">
+          <Container fluid>
+            <ToastContainer />
             <Form>
-              <div>
-                <h3>Blog</h3>
-              </div>
               <div>
                 <Form.Group className="mb-3" controlId="formBasicTitle">
                   <Form.Control
@@ -145,21 +144,18 @@ const Home = () => {
                 </Button>
               </div>
             </Form>
-          </div>
-        </Container>
+          </Container>
+        </div>
         <div className="text-center">Loading...</div>
       </React.Fragment>
     );
   } else {
     return (
       <React.Fragment>
-        <Container fluid>
-          <ToastContainer />
+        <div className="div-body">
           <div className="main">
+            <ToastContainer />
             <Form>
-              <div>
-                <h3>Blog</h3>
-              </div>
               <div>
                 <Form.Group className="mb-3" controlId="formBasicTitle">
                   <Form.Control
@@ -184,10 +180,6 @@ const Home = () => {
                   />
                 </Form.Group>
               </div>
-              <Form.Group
-                className="d-grid gap-2"
-                controlId="formBasicCheckbox"
-              ></Form.Group>
               <div className="d-grid gap-2">
                 <Button
                   id="btn"
@@ -199,37 +191,56 @@ const Home = () => {
               </div>
             </Form>
           </div>
-        </Container>
-        {/* Map Method for data Showing */}
-        <Container className="cards">
-          {data.map((item) => {
-            return (
-              <div className="cards-inner">
-                <Card style={{ width: "18rem", textAlign: "center" }}>
-                  <Card.Body>
-                    <Card.Text className="text">
-                      By:
-                      <b
-                        className="text"
-                        onClick={() => navigate(`AllProfiles/${item?.uid}`)}
-                      >
-                        {item.displayName}
-                      </b>
-                    </Card.Text>
-                    <Card.Title>{item.Title}</Card.Title>
-                    <Card.Text>{item.Description}</Card.Text>
-                    <Button
-                      variant="primary me-2"
-                      onClick={() => navigate(`Blog/${item?.id}`)}
-                    >
-                      Blog Details
-                    </Button>
-                  </Card.Body>
-                </Card>
-              </div>
-            );
-          })}
-        </Container>
+          {/* Map Method for data Showing */}
+          <Container className="cards">
+            {data.map((item) => {
+              var date = new Date(item.timeStamp);
+              return (
+                <div className="cards-inner">
+                  <Card>
+                    <Card.Body>
+                      <div className="content-div title-div">
+                        <Card.Title>{item.Title}</Card.Title>
+                      </div>
+                      <div className="content-div profile-div">
+                        <Card.Text className="text">
+                          by
+                          <b
+                            onClick={() => navigate(`AllProfiles/${item?.uid}`)}
+                          >
+                            {item.displayName}
+                          </b>
+                        </Card.Text>
+                      </div>
+                      <div className="content-div description-div">
+                        <Card.Text
+                          ref={getValue}
+                          value={desc}
+                          id="sort-description"
+                        >
+                          {`${item.Description.slice(0, 50)}...`}
+                        </Card.Text>
+                      </div>
+                      <div className="content-div readmore-div">
+                        <div className="last-text">
+                          <Card.Text>{date.toLocaleString()}</Card.Text>
+                        </div>
+                        <div className="last-text">
+                          <Card.Text
+                            className="read-more text-right"
+                            onClick={() => navigate(`Blog/${item?.id}`)}
+                          >
+                            Continue Reading <ArrowRight />
+                          </Card.Text>
+                        </div>
+                      </div>
+                    </Card.Body>
+                  </Card>
+                </div>
+              );
+            })}
+          </Container>
+        </div>
       </React.Fragment>
     );
   }

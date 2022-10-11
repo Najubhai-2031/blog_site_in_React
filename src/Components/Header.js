@@ -5,7 +5,8 @@ import Dropdown from "react-bootstrap/Dropdown";
 import { useNavigate } from "react-router";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "../firebase/config";
-import { Button, Form } from "react-bootstrap";
+import { Button, Form, Nav } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   const [name, setName] = useState("");
@@ -31,22 +32,21 @@ const Header = () => {
   }, []);
 
   return (
-    <Navbar>
+    <Navbar className="navbar">
       <Container>
-        <Navbar.Brand href="#home">Stack Summation</Navbar.Brand>
+        <Navbar.Brand className="logo"><Link to="/">Stack Summation</Link></Navbar.Brand>
         <Navbar.Toggle />
-        <Form className="d-flex">
-          <Form.Control
-            type="search"
-            placeholder="Search"
-            className="me-2"
-            aria-label="Search"
-          />
-          <Button variant="outline-success">Search</Button>
-        </Form>
         <Navbar.Collapse className="justify-content-end">
-          <Dropdown>
-            <Dropdown.Toggle variant="success" id="dropdown-basic">
+          <Nav className="me-auto">
+            <Nav.Link> <Link to="AboutUs">About Us</Link></Nav.Link>
+            <Nav.Link href="#link">Link</Nav.Link>
+          </Nav>
+          <Dropdown className="drop-menu">
+            <Dropdown.Toggle
+              className="name"
+              variant="success"
+              id="dropdown-basic"
+            >
               Hi, {name}
             </Dropdown.Toggle>
 
