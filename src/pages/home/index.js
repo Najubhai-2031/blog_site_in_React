@@ -87,7 +87,6 @@ const Home = () => {
           description: desc,
           timeStamp: Date.now(),
           uid: uId,
-          writenBy: name,
         }).then((docResponse) => {
           const docRef = doc(db, "Blog", docResponse?.id);
           updateDoc(docRef, {
@@ -173,7 +172,7 @@ const Home = () => {
                   <Card>
                     <Card.Body>
                       <div className="content-div title-div">
-                        <Card.Title>{item.Title}</Card.Title>
+                        <Card.Title>{item.title}</Card.Title>
                       </div>
                       <div className="content-div profile-div">
                         <Card.Text className="text">
@@ -191,7 +190,7 @@ const Home = () => {
                           value={desc}
                           id="sort-description"
                         >
-                          {`${item.Description.slice(0, 150)}...`}
+                          {`${item.description.slice(0, 150)}...`}
                         </Card.Text>
                       </div>
                       <div className="content-div">
