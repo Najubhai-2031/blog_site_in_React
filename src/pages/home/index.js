@@ -28,10 +28,9 @@ const Home = () => {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [uId, setUId] = useState("");
-  const [view, setView] = useState(0);
+  const [view] = useState(0);
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [err, setErr] = useState("");
   const [data, setData] = useState([]);
 
   const navigate = useNavigate();
@@ -67,20 +66,7 @@ const Home = () => {
         setIsLoading(true);
         setData(blogData);
       })
-      .catch((err) => {
-        setErr("No Data Found!!!");
-      });
-  };
-
-  const viewsCounter = (id) => {
-    var visitCount = localStorage.getItem(`page_view${id}`);
-    if (visitCount) {
-      visitCount = Number(visitCount) + 1;
-      localStorage.setItem(`page_view${id}`, visitCount);
-    } else {
-      visitCount = 1;
-      localStorage.setItem(`page_view${id}`, 1);
-    }
+      .catch((err) => {});
   };
 
   const handleSubmit = (event) => {
@@ -97,8 +83,8 @@ const Home = () => {
       });
       setTimeout(() => {
         addDoc(collection(db, "Blog"), {
-          Title: title,
-          Description: desc,
+          title: title,
+          description: desc,
           timeStamp: Date.now(),
           uid: uId,
           writenBy: name,
@@ -126,104 +112,64 @@ const Home = () => {
     getBlogs();
   }, []);
 
-  if (!isLoading) {
-    return (
-      <React.Fragment>
+  const handleNavigate = async (id) => {
+    const docRef = doc(db, "Blog", id);
+    const docSnap = await getDoc(docRef);
+    const currentView = docSnap.data()?.views;
+    updateDoc(docRef, {
+      views: currentView + 1,
+    })
+      .then((res) => {})
+      .catch((err) => {});
+    navigate(`Blog/${id}`);
+  };
+
+  return (
+    <React.Fragment>
+      <div className="div-body">
         <div className="main">
-          <Container fluid>
-            <ToastContainer />
-            <Form>
-              <div>
-                <Form.Group className="mb-3" controlId="formBasicTitle">
-                  <Form.Control
-                    type="text"
-                    placeholder="Title"
-                    onChange={(e) => setTitle(e.target.value)}
-                    value={title}
-                  />
-                </Form.Group>
-              </div>
-              <div>
-                <Form.Group
-                  className="mb-3"
-                  controlId="exampleForm.ControlTextarea1"
-                >
-                  <Form.Control
-                    placeholder="Description"
-                    as="textarea"
-                    onChange={(e) => setDesc(e.target.value)}
-                    rows={3}
-                    value={desc}
-                  />
-                </Form.Group>
-              </div>
+          <ToastContainer />
+          <Form>
+            <div>
+              <Form.Group className="mb-3" controlId="formBasicTitle">
+                <Form.Control
+                  type="text"
+                  placeholder="Title"
+                  onChange={(e) => setTitle(e.target.value)}
+                  value={title}
+                />
+              </Form.Group>
+            </div>
+            <div>
               <Form.Group
-                className="d-grid gap-2"
-                controlId="formBasicCheckbox"
-              ></Form.Group>
-              <div className="d-grid gap-2">
-                <Button
-                  id="btn"
-                  variant="outline-primary"
-                  onClick={handleSubmit}
-                >
-                  Add Blog
-                </Button>
-              </div>
-            </Form>
-          </Container>
+                className="mb-3"
+                controlId="exampleForm.ControlTextarea1"
+              >
+                <Form.Control
+                  placeholder="Description"
+                  as="textarea"
+                  onChange={(e) => setDesc(e.target.value)}
+                  rows={3}
+                  value={desc}
+                />
+              </Form.Group>
+            </div>
+            <div className="d-grid gap-2">
+              <Button id="btn" variant="outline-primary" onClick={handleSubmit}>
+                Add Blog
+              </Button>
+            </div>
+          </Form>
         </div>
-        <div className="text-center">Loading...</div>
-      </React.Fragment>
-    );
-  } else {
-    return (
-      <React.Fragment>
-        <div className="div-body">
-          <div className="main">
-            <ToastContainer />
-            <Form>
-              <div>
-                <Form.Group className="mb-3" controlId="formBasicTitle">
-                  <Form.Control
-                    type="text"
-                    placeholder="Title"
-                    onChange={(e) => setTitle(e.target.value)}
-                    value={title}
-                  />
-                </Form.Group>
-              </div>
-              <div>
-                <Form.Group
-                  className="mb-3"
-                  controlId="exampleForm.ControlTextarea1"
-                >
-                  <Form.Control
-                    placeholder="Description"
-                    as="textarea"
-                    onChange={(e) => setDesc(e.target.value)}
-                    rows={3}
-                    value={desc}
-                  />
-                </Form.Group>
-              </div>
-              <div className="d-grid gap-2">
-                <Button
-                  id="btn"
-                  variant="outline-primary"
-                  onClick={handleSubmit}
-                >
-                  Add Blog
-                </Button>
-              </div>
-            </Form>
-          </div>
-          {/* Map Method for data Showing */}
+        {/* Map Method for data Showing */}
+        {!isLoading ? (
+          <div className="text-center">Loading...</div>
+        ) : (
           <Container className="cards">
             {data.map((item) => {
               var date = new Date(item.timeStamp);
               return (
-                <div className="cards-inner">
+                <div className="cards-inner" key={item?.id}>
                   <Card>
                     <Card.Body>
                       <div className="content-div title-div">
@@ -245,7 +191,7 @@ const Home = () => {
                           value={desc}
                           id="sort-description"
                         >
-                          {`${item.Description.slice(0, 50)}...`}
+                          {`${item.Description.slice(0, 150)}...`}
                         </Card.Text>
                       </div>
                       <div className="content-div">
@@ -260,12 +206,7 @@ const Home = () => {
                         <div className="last-text">
                           <Card.Text
                             className="read-more text-right"
-                            onClick={() => {
-                              viewsCounter(item?.id);
-                              setTimeout(() => {
-                                navigate(`Blog/${item?.id}`);
-                              }, 1000);
-                            }}
+                            onClick={() => handleNavigate(item?.id)}
                           >
                             Continue Reading <ArrowRight />
                           </Card.Text>
@@ -277,10 +218,10 @@ const Home = () => {
               );
             })}
           </Container>
-        </div>
-      </React.Fragment>
-    );
-  }
+        )}
+      </div>
+    </React.Fragment>
+  );
 };
 
 export default Home;

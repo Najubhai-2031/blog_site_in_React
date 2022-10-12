@@ -48,3 +48,34 @@
   text-decoration: none;
   cursor: pointer;
 }
+
+.comment-div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.comments-show-div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.comments-show-div .each-comment {
+  padding: 10px;
+  margin: 10px;
+  background: #f1f2f5;
+  border-radius: 20px;
+  width: 40vw;
+}
+
+.each-comment b {
+  text-decoration: underline;
+}
+
+.each-comment b:hover {
+  color: rgb(128, 128, 251);
+  text-decoration: none;
+  cursor: pointer;
+}
