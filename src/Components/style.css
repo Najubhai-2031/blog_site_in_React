@@ -32,7 +32,19 @@
   color: #737373;
 }
 
-.logo a{
+.logo a {
   color: black !important;
   text-decoration: none;
+}
+
+.cards-inner .text b {
+  text-align: left;
+  margin-left: 5px;
+  text-decoration: underline;
+}
+
+.cards-inner .text b:hover {
+  color: rgb(128, 128, 251);
+  text-decoration: none;
+  cursor: pointer;
 }

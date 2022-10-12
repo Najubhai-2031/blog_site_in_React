@@ -54,9 +54,17 @@ button {
 .cards-inner .text {
   text-align: left;
 }
+
 .cards-inner .text b {
   text-align: left;
   margin-left: 5px;
+  text-decoration: underline;
+}
+
+.cards-inner .text b:hover {
+  color: rgb(128, 128, 251);
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .read-more {
@@ -64,7 +72,7 @@ button {
   color: rgb(80, 80, 169);
 }
 
-.last-text{
+.last-text {
   font-size: 13px !important;
 }
 
