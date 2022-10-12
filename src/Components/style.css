@@ -32,7 +32,84 @@
   color: #737373;
 }
 
-.logo a{
+.logo a {
   color: black !important;
   text-decoration: none;
+}
+
+.cards-inner .text b {
+  text-align: left;
+  margin-left: 5px;
+  text-decoration: underline;
+}
+
+.cards-inner .text b:hover {
+  color: rgb(128, 128, 251);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.comment-div {
+  margin-top: 20px;
+}
+.write-comment {
+  width: 50vw;
+}
+
+.comment-inner {
+  display: flex;
+}
+.comment-inner div {
+  margin-left: 5px;
+}
+
+.comments-show-div .each-comment {
+  padding: 5px 20px;
+  margin: 10px;
+  background: #f1f2f5;
+  border-radius: 20px;
+  width: 40vw;
+  display: flex;
+  justify-content: space-between;
+}
+
+.name-and-date span {
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.name-and-date span:hover {
+  color: rgb(128, 128, 251);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.name-show span {
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.name-show span:hover {
+  color: rgb(128, 128, 251);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.each-comment b:hover {
+  color: rgb(128, 128, 251);
+  text-decoration: none !important;
+  cursor: pointer;
+}
+.each-comment {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+}
+
+.each-comment .delete {
+  margin-left: 30px;
+}
+
+.commented-on{
+  font-size: 12px;
 }

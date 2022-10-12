@@ -1,5 +1,7 @@
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { FaPenNib } from "react-icons/fa";
 import { ArrowRight } from "react-bootstrap-icons";
+import { AiOutlineEye } from "react-icons/ai";
 import {
   addDoc,
   collection,
@@ -26,6 +28,8 @@ const Home = () => {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [uId, setUId] = useState("");
+  const [view] = useState(0);
+  const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState([]);
 
@@ -62,9 +66,7 @@ const Home = () => {
         setIsLoading(true);
         setData(blogData);
       })
-      .catch((err) => {
-        toast.error(err);
-      });
+      .catch((err) => {});
   };
 
   const handleSubmit = (event) => {
@@ -72,26 +74,36 @@ const Home = () => {
     if (title === "" || desc === "") {
       alert("Please Fill The Details");
     } else {
-      addDoc(collection(db, "Blog"), {
-        Title: title,
-        Description: desc,
-        timeStamp: Date.now(),
-        uid: uId,
-      }).then((docResponse) => {
-        const docRef = doc(db, "Blog", docResponse?.id);
-        updateDoc(docRef, {
-          id: docResponse?.id,
-        })
-          .then(() => {
-            getBlogs();
-          })
-          .catch((err) => {
-            toast.error(err);
-          });
+      const auth = getAuth();
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          setName(user?.displayName);
+        } else {
+        }
       });
-      setTitle("");
-      setDesc("");
-      toast.success("Blog Added Successfully");
+      setTimeout(() => {
+        addDoc(collection(db, "Blog"), {
+          title: title,
+          description: desc,
+          timeStamp: Date.now(),
+          uid: uId,
+        }).then((docResponse) => {
+          const docRef = doc(db, "Blog", docResponse?.id);
+          updateDoc(docRef, {
+            id: docResponse?.id,
+            views: view,
+          })
+            .then(() => {
+              getBlogs();
+            })
+            .catch((err) => {
+              toast.error(err);
+            });
+        });
+        setTitle("");
+        setDesc("");
+        toast.success("Blog Added Successfully");
+      }, 500);
     }
   };
 
@@ -99,112 +111,72 @@ const Home = () => {
     getBlogs();
   }, []);
 
-  if (!isLoading) {
-    return (
-      <React.Fragment>
+  const handleNavigate = async (id) => {
+    const docRef = doc(db, "Blog", id);
+    const docSnap = await getDoc(docRef);
+    const currentView = docSnap.data()?.views;
+    updateDoc(docRef, {
+      views: currentView + 1,
+    })
+      .then((res) => {})
+      .catch((err) => {});
+    navigate(`Blog/${id}`);
+  };
+
+  return (
+    <React.Fragment>
+      <div className="div-body">
         <div className="main">
-          <Container fluid>
-            <ToastContainer />
-            <Form>
-              <div>
-                <Form.Group className="mb-3" controlId="formBasicTitle">
-                  <Form.Control
-                    type="text"
-                    placeholder="Title"
-                    onChange={(e) => setTitle(e.target.value)}
-                    value={title}
-                  />
-                </Form.Group>
-              </div>
-              <div>
-                <Form.Group
-                  className="mb-3"
-                  controlId="exampleForm.ControlTextarea1"
-                >
-                  <Form.Control
-                    placeholder="Description"
-                    as="textarea"
-                    onChange={(e) => setDesc(e.target.value)}
-                    rows={3}
-                    value={desc}
-                  />
-                </Form.Group>
-              </div>
+          <ToastContainer />
+          <Form>
+            <div>
+              <Form.Group className="mb-3" controlId="formBasicTitle">
+                <Form.Control
+                  type="text"
+                  placeholder="Title"
+                  onChange={(e) => setTitle(e.target.value)}
+                  value={title}
+                />
+              </Form.Group>
+            </div>
+            <div>
               <Form.Group
-                className="d-grid gap-2"
-                controlId="formBasicCheckbox"
-              ></Form.Group>
-              <div className="d-grid gap-2">
-                <Button
-                  id="btn"
-                  variant="outline-primary"
-                  onClick={handleSubmit}
-                >
-                  Add Blog
-                </Button>
-              </div>
-            </Form>
-          </Container>
+                className="mb-3"
+                controlId="exampleForm.ControlTextarea1"
+              >
+                <Form.Control
+                  placeholder="Description"
+                  as="textarea"
+                  onChange={(e) => setDesc(e.target.value)}
+                  rows={3}
+                  value={desc}
+                />
+              </Form.Group>
+            </div>
+            <div className="d-grid gap-2">
+              <Button id="btn" variant="outline-primary" onClick={handleSubmit}>
+                Add Blog
+              </Button>
+            </div>
+          </Form>
         </div>
-        <div className="text-center">Loading...</div>
-      </React.Fragment>
-    );
-  } else {
-    return (
-      <React.Fragment>
-        <div className="div-body">
-          <div className="main">
-            <ToastContainer />
-            <Form>
-              <div>
-                <Form.Group className="mb-3" controlId="formBasicTitle">
-                  <Form.Control
-                    type="text"
-                    placeholder="Title"
-                    onChange={(e) => setTitle(e.target.value)}
-                    value={title}
-                  />
-                </Form.Group>
-              </div>
-              <div>
-                <Form.Group
-                  className="mb-3"
-                  controlId="exampleForm.ControlTextarea1"
-                >
-                  <Form.Control
-                    placeholder="Description"
-                    as="textarea"
-                    onChange={(e) => setDesc(e.target.value)}
-                    rows={3}
-                    value={desc}
-                  />
-                </Form.Group>
-              </div>
-              <div className="d-grid gap-2">
-                <Button
-                  id="btn"
-                  variant="outline-primary"
-                  onClick={handleSubmit}
-                >
-                  Add Blog
-                </Button>
-              </div>
-            </Form>
-          </div>
-          {/* Map Method for data Showing */}
+        {/* Map Method for data Showing */}
+        {!isLoading ? (
+          <div className="text-center">Loading...</div>
+        ) : (
           <Container className="cards">
             {data.map((item) => {
               var date = new Date(item.timeStamp);
               return (
-                <div className="cards-inner">
+                <div className="cards-inner" key={item?.id}>
                   <Card>
                     <Card.Body>
                       <div className="content-div title-div">
-                        <Card.Title>{item.Title}</Card.Title>
+                        <Card.Title>{item.title}</Card.Title>
                       </div>
                       <div className="content-div profile-div">
                         <Card.Text className="text">
-                          by
+                          <FaPenNib />
                           <b
                             onClick={() => navigate(`AllProfiles/${item?.uid}`)}
                           >
@@ -218,8 +190,13 @@ const Home = () => {
                           value={desc}
                           id="sort-description"
                         >
-                          {`${item.Description.slice(0, 50)}...`}
+                          {`${item.description.slice(0, 150)}...`}
                         </Card.Text>
+                      </div>
+                      <div className="content-div">
+                        <AiOutlineEye />
+                        &nbsp;
+                        {item?.views}
                       </div>
                       <div className="content-div readmore-div">
                         <div className="last-text">
@@ -228,7 +205,7 @@ const Home = () => {
                         <div className="last-text">
                           <Card.Text
                             className="read-more text-right"
-                            onClick={() => navigate(`Blog/${item?.id}`)}
+                            onClick={() => handleNavigate(item?.id)}
                           >
                             Continue Reading <ArrowRight />
                           </Card.Text>
@@ -240,10 +217,10 @@ const Home = () => {
               );
             })}
           </Container>
-        </div>
-      </React.Fragment>
-    );
-  }
+        )}
+      </div>
+    </React.Fragment>
+  );
 };
 
 export default Home;
