@@ -3,11 +3,17 @@ import { useNavigate, useParams } from "react-router";
 import { AiOutlineEye } from "react-icons/ai";
 import { FaPenNib } from "react-icons/fa";
 import {
+  addDoc,
+  collection,
   deleteDoc,
   doc,
   getDoc,
+  getDocs,
+  orderBy,
+  query,
   runTransaction,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import { db } from "../firebase/config";
 import Button from "react-bootstrap/Button";
@@ -23,7 +29,9 @@ const BlogDetails = () => {
   const [title, setTitle] = useState("");
   const [uid, setUid] = useState("");
   const [desc, setDesc] = useState("");
+  const [comment, setComment] = useState("");
   const [data, setData] = useState([]);
+  const [comments, setCommments] = useState([]);
 
   const getBlogDetail = async () => {
     const auth = getAuth();
@@ -41,13 +49,46 @@ const BlogDetails = () => {
       const docRef = doc(db, "Blog", docSnap.data().id);
       updateDoc(docRef, {
         id: docSnap.data()?.id,
-        views: currentView + 1,
       })
         .then((res) => {})
         .catch((err) => {});
     } else {
       console.log("No such document!");
     }
+  };
+
+  const getComments = async () => {
+    const querySnapshot = collection(db, "Comments");
+    const data = await getDocs(
+      query(querySnapshot, orderBy("timeStamp"), where("blogId", "==", id))
+    );
+
+    const commentList = data.docs.map((comment) => {
+      return comment.data();
+    });
+
+    const getCommentUser = data.docs.map((userInfo) => {
+      return userInfo.data()?.uId;
+    });
+
+    Promise.all(
+      getCommentUser.map((userID) => getDoc(doc(db, "users", userID)))
+    )
+      .then((response) => {
+        const users = response?.map((user) => {
+          return user.data();
+        });
+        const commentData = data.docs
+          .map((comm) => {
+            const findUser = users.find((user) => {
+              return comm?.data()?.uId === user.id;
+            });
+            return { ...comm?.data(), displayName: findUser.displayName };
+          })
+          .sort((a, b) => b.timeStamp - a.timeStamp);
+        setCommments(commentData);
+      })
+      .catch((err) => {});
   };
 
   const handleGetDataforEdit = (Title, Description) => {
@@ -99,8 +140,36 @@ const BlogDetails = () => {
     }
   };
 
+  const handleAddComment = (event) => {
+    event.preventDefault();
+    if (comment === "") {
+      alert("Please Fill The Details");
+    } else {
+      setTimeout(() => {
+        addDoc(collection(db, "Comments"), {
+          comment: comment,
+          timeStamp: Date.now(),
+          uId: uid,
+          blogId: id,
+        }).then((docResponse) => {
+          const docRef = doc(db, "Comments", docResponse?.id);
+          updateDoc(docRef, {
+            id: docResponse?.id,
+          })
+            .then(() => {
+              getComments();
+            })
+            .catch((err) => {});
+        });
+        setComment("");
+        toast.success("Comment Submited Successfully");
+      }, 500);
+    }
+  };
+
   useEffect(() => {
     getBlogDetail();
+    getComments();
   }, [id]);
 
   return (
@@ -193,6 +262,49 @@ const BlogDetails = () => {
             </Card>
           </Container>
         </div>
+      </div>
+
+      {/* Comments Section */}
+      <div className="comment-div">
+        <Form onSubmit={handleAddComment}>
+          <Form.Group className="mb-3" controlId="formBasicDescription">
+            <Form.Control
+              type="text"
+              rows={3}
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Start the discussion…"
+              as="textarea"
+            />
+          </Form.Group>
+          <div className="gap-2 text-center">
+            <Button variant="primary" type="submit" className="update-btn me-2">
+              Post Comment
+            </Button>
+            <Button
+              variant="primary"
+              type="button"
+              onClick={getComments}
+              className="update-btn"
+            >
+              Cancel
+            </Button>
+          </div>
+        </Form>
+      </div>
+
+      <div className="comments-show-div">
+        <h4>Comments</h4>
+        {comments.map((item) => {
+          return (
+            <div className="each-comment">
+              <b onClick={() => navigate(`/AllProfiles/${item?.uId}`)}>
+                {item?.displayName}
+              </b>
+              <p>{item?.comment}</p>
+            </div>
+          );
+        })}
       </div>
     </React.Fragment>
   );
