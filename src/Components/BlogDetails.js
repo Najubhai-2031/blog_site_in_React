@@ -43,20 +43,6 @@ const BlogDetails = () => {
       } else {
       }
     });
-    // const docRef = doc(db, "Blog", id);
-    // const docSnap = await getDoc(docRef);
-    // if (docSnap.exists()) {
-    //   const currentView = docSnap.data()?.views;
-    //   setData(docSnap.data());
-    //   const docRef = doc(db, "Blog", docSnap.data().id);
-    //   updateDoc(docRef, {
-    //     id: docSnap.data()?.id,
-    //   })
-    //     .then((res) => {})
-    //     .catch((err) => {});
-    // } else {
-    //   console.log("No such document!");
-    // }
 
     const querySnapshot = collection(db, "Blog");
     const data = await getDocs(
@@ -270,7 +256,7 @@ const BlogDetails = () => {
                     <Card.Body>
                       <Card.Text style={{ marginTop: "-15px" }}>
                         <AiOutlineEye />
-                        <span style={{ fontSize: "12px" }}>{item.views}</span>
+                        <span style={{ fontSize: "12px",marginLeft:'5px' }}>{item.views}</span>
                       </Card.Text>
                       <Card.Text style={{ marginTop: "-20px" }}>
                         <span style={{ fontSize: "12px" }}> Published On:</span>
