@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { AiOutlineEye } from "react-icons/ai";
+import { AiOutlineEye, AiOutlineDelete } from "react-icons/ai";
 import { FaPenNib } from "react-icons/fa";
 import {
   addDoc,
@@ -29,6 +29,7 @@ const BlogDetails = () => {
   const [title, setTitle] = useState("");
   const [uid, setUid] = useState("");
   const [desc, setDesc] = useState("");
+  const [name, setName] = useState("");
   const [comment, setComment] = useState("");
   const [data, setData] = useState([]);
   const [comments, setCommments] = useState([]);
@@ -38,23 +39,53 @@ const BlogDetails = () => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
         setUid(user?.uid);
+        setName(user?.displayName);
       } else {
       }
     });
-    const docRef = doc(db, "Blog", id);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      const currentView = docSnap.data()?.views;
-      setData(docSnap.data());
-      const docRef = doc(db, "Blog", docSnap.data().id);
-      updateDoc(docRef, {
-        id: docSnap.data()?.id,
+    // const docRef = doc(db, "Blog", id);
+    // const docSnap = await getDoc(docRef);
+    // if (docSnap.exists()) {
+    //   const currentView = docSnap.data()?.views;
+    //   setData(docSnap.data());
+    //   const docRef = doc(db, "Blog", docSnap.data().id);
+    //   updateDoc(docRef, {
+    //     id: docSnap.data()?.id,
+    //   })
+    //     .then((res) => {})
+    //     .catch((err) => {});
+    // } else {
+    //   console.log("No such document!");
+    // }
+
+    const querySnapshot = collection(db, "Blog");
+    const data = await getDocs(
+      query(querySnapshot, orderBy("timeStamp"), where("id", "==", id))
+    );
+
+    const blogsUser = data.docs.map((blog) => {
+      return blog.data()?.uid;
+    });
+    console.log("blogsUser", blogsUser);
+
+    Promise.all(blogsUser.map((userID) => getDoc(doc(db, "users", userID))))
+      .then((response) => {
+        const users = response?.map((user) => {
+          return user.data();
+        });
+        const blogData = data.docs
+          .map((blog) => {
+            const findUser = users.find(
+              (user) => blog?.data()?.uid === user.id
+            );
+            return { ...blog.data(), displayName: findUser.displayName };
+          })
+          .sort((a, b) => b.timeStamp - a.timeStamp);
+        console.log("blogData", blogData);
+        // setIsLoading(true);
+        setData(blogData);
       })
-        .then((res) => {})
-        .catch((err) => {});
-    } else {
-      console.log("No such document!");
-    }
+      .catch((err) => {});
   };
 
   const getComments = async () => {
@@ -107,11 +138,11 @@ const BlogDetails = () => {
         if (!sfDoc.exists()) {
           throw "Document does not exist!";
         }
-        const newTitle = (sfDoc.data().Title = title);
-        const newDescr = (sfDoc.data().Description = desc);
+        const newTitle = (sfDoc.data().title = title);
+        const newDescr = (sfDoc.data().description = desc);
         transaction.update(sfDocRef, {
-          Title: newTitle,
-          Description: newDescr,
+          title: newTitle,
+          description: newDescr,
         });
       });
       toast.success("Blog Updated Successefully");
@@ -164,6 +195,15 @@ const BlogDetails = () => {
         setComment("");
         toast.success("Comment Submited Successfully");
       }, 500);
+    }
+  };
+
+  const handleDeleteComments = async (commentId) => {
+    let confirmationDelete = window.confirm("Are You Sure?");
+    if (confirmationDelete === true) {
+      toast.success("Comment Deleted Successefully");
+      await deleteDoc(doc(db, "Comments", commentId));
+      getComments();
     }
   };
 
@@ -221,91 +261,145 @@ const BlogDetails = () => {
       <div className="cards">
         <div className="cards-inner">
           <Container>
-            <Card>
-              {/* <Card.Img variant="top" src="holder.js/100px180" /> */}
-              <Card.Body>
-                <Card.Text>
-                  <AiOutlineEye /> &nbsp;
-                  {data.views}
-                </Card.Text>
-                <Card.Text
-                  className="text"
-                  onClick={() => navigate(`/AllProfiles/${data?.uid}`)}
-                >
-                  <FaPenNib />
-                  &nbsp;
-                  <b>{data.writenBy}</b>
-                </Card.Text>
-                <Card.Title>{data.Title}</Card.Title>
-                <Card.Text>{data.Description}</Card.Text>
-                {uid === data.uid ? (
-                  <div className="text-center">
-                    <Button
-                      id="delete-btn"
-                      variant="primary me-2"
-                      onClick={() => handleDeleteBlog(data.id)}
-                    >
-                      Delete Blog
-                    </Button>
-                    <Button
-                      id="edit-btn"
-                      variant="primary"
-                      onClick={() =>
-                        handleGetDataforEdit(data.Title, data.Description)
-                      }
-                    >
-                      Edit Blog
-                    </Button>
-                  </div>
-                ) : null}
-              </Card.Body>
-            </Card>
+            {data.map((item) => {
+              var date = new Date(item.timeStamp);
+              return (
+                <div>
+                  <Card>
+                    {/* <Card.Img variant="top" src="holder.js/100px180" /> */}
+                    <Card.Body>
+                      <Card.Text style={{ marginTop: "-15px" }}>
+                        <AiOutlineEye />
+                        <span style={{ fontSize: "12px" }}>{item.views}</span>
+                      </Card.Text>
+                      <Card.Text style={{ marginTop: "-20px" }}>
+                        <span style={{ fontSize: "12px" }}> Published On:</span>
+                        <span style={{ fontWeight: "500", fontSize: "12px" }}>
+                          {date.toLocaleString()}
+                        </span>
+                      </Card.Text>
+                      <Card.Text
+                        className="text"
+                        onClick={() => navigate(`/AllProfiles/${item?.uid}`)}
+                      >
+                        <FaPenNib />
+                        &nbsp;
+                        <b>{item.displayName}</b>
+                      </Card.Text>
+                      <Card.Title>{item.title}</Card.Title>
+                      <Card.Text>{item.description}</Card.Text>
+                      {uid === item.uid ? (
+                        <div className="text-center">
+                          <Button
+                            id="delete-btn"
+                            variant="primary me-2"
+                            onClick={() => handleDeleteBlog(item.id)}
+                          >
+                            Delete Blog
+                          </Button>
+                          <Button
+                            id="edit-btn"
+                            variant="primary"
+                            onClick={() =>
+                              handleGetDataforEdit(item.title, item.description)
+                            }
+                          >
+                            Edit Blog
+                          </Button>
+                        </div>
+                      ) : null}
+                    </Card.Body>
+                  </Card>
+                </div>
+              );
+            })}
           </Container>
         </div>
       </div>
 
-      {/* Comments Section */}
+      {/* Start -- Add Comments Section */}
       <div className="comment-div">
-        <Form onSubmit={handleAddComment}>
-          <Form.Group className="mb-3" controlId="formBasicDescription">
-            <Form.Control
-              type="text"
-              rows={3}
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Start the discussion…"
-              as="textarea"
-            />
-          </Form.Group>
-          <div className="gap-2 text-center">
-            <Button variant="primary" type="submit" className="update-btn me-2">
-              Post Comment
-            </Button>
-            <Button
-              variant="primary"
-              type="button"
-              onClick={getComments}
-              className="update-btn"
-            >
-              Cancel
-            </Button>
+        <Container>
+          <div>
+            <h3>Write Comments</h3>
           </div>
-        </Form>
-      </div>
-
-      <div className="comments-show-div">
-        <h4>Comments</h4>
-        {comments.map((item) => {
-          return (
-            <div className="each-comment">
-              <b onClick={() => navigate(`/AllProfiles/${item?.uId}`)}>
-                {item?.displayName}
-              </b>
-              <p>{item?.comment}</p>
+          <Form onSubmit={handleAddComment}>
+            <div className="comment-inner">
+              <div
+                className="name-show"
+                onClick={() => navigate(`/AllProfiles/${uid}`)}
+              >
+                <span> {name}</span>
+              </div>
+              <div className="write-comment">
+                <Form.Group className="mb-3" controlId="formBasicDescription">
+                  <Form.Control
+                    type="text"
+                    rows={3}
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder="Start the discussion…"
+                    as="textarea"
+                  />
+                </Form.Group>
+              </div>
+              <div className="gap-2 text-center">
+                <Button
+                  variant="primary"
+                  type="submit"
+                  className="update-btn me-2"
+                >
+                  Post Comment
+                </Button>
+              </div>
             </div>
-          );
-        })}
+          </Form>
+        </Container>
       </div>
+      {/* End -- Add Comments Section */}
+
+      {/* Start -- Show Comments Section */}
+      <div className="comments-show-div">
+        <Container>
+          <h5>Comments</h5>
+          {comments.map((item) => {
+            var date = new Date(item?.timeStamp);
+            return (
+              <div className="each-comment">
+                <div>
+                  <div
+                    className="name-and-date"
+                    onClick={() => navigate(`/AllProfiles/${item?.uId}`)}
+                  >
+                    <span>{item?.displayName}</span>
+                  </div>
+                  <div
+                    className="commented-on"
+                    style={{ marginTop: "6px", marginBottom: "6px" }}
+                  >
+                    {" "}
+                    <span style={{ fontWeight: "500" }}>Commented On: </span>
+                    <span style={{ fontWeight: "600" }}>
+                      {date.toLocaleString()}
+                    </span>
+                  </div>
+                  <div>
+                    <p>{item?.comment}</p>
+                  </div>
+                </div>
+                {uid === item?.uId ? (
+                  <div className="delete">
+                    <AiOutlineDelete
+                      onClick={() => handleDeleteComments(item?.id)}
+                    />
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+        </Container>
+      </div>
+      {/* End -- Show Comments Section */}
     </React.Fragment>
   );
 };
