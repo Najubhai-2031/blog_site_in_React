@@ -1,5 +1,7 @@
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { FaPenNib } from "react-icons/fa";
 import { ArrowRight } from "react-bootstrap-icons";
+import { AiOutlineEye } from "react-icons/ai";
 import {
   addDoc,
   collection,
@@ -26,7 +28,10 @@ const Home = () => {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [uId, setUId] = useState("");
+  const [view, setView] = useState(0);
+  const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [err, setErr] = useState("");
   const [data, setData] = useState([]);
 
   const navigate = useNavigate();
@@ -63,8 +68,19 @@ const Home = () => {
         setData(blogData);
       })
       .catch((err) => {
-        toast.error(err);
+        setErr("No Data Found!!!");
       });
+  };
+
+  const viewsCounter = (id) => {
+    var visitCount = localStorage.getItem(`page_view${id}`);
+    if (visitCount) {
+      visitCount = Number(visitCount) + 1;
+      localStorage.setItem(`page_view${id}`, visitCount);
+    } else {
+      visitCount = 1;
+      localStorage.setItem(`page_view${id}`, 1);
+    }
   };
 
   const handleSubmit = (event) => {
@@ -72,26 +88,37 @@ const Home = () => {
     if (title === "" || desc === "") {
       alert("Please Fill The Details");
     } else {
-      addDoc(collection(db, "Blog"), {
-        Title: title,
-        Description: desc,
-        timeStamp: Date.now(),
-        uid: uId,
-      }).then((docResponse) => {
-        const docRef = doc(db, "Blog", docResponse?.id);
-        updateDoc(docRef, {
-          id: docResponse?.id,
-        })
-          .then(() => {
-            getBlogs();
-          })
-          .catch((err) => {
-            toast.error(err);
-          });
+      const auth = getAuth();
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          setName(user?.displayName);
+        } else {
+        }
       });
-      setTitle("");
-      setDesc("");
-      toast.success("Blog Added Successfully");
+      setTimeout(() => {
+        addDoc(collection(db, "Blog"), {
+          Title: title,
+          Description: desc,
+          timeStamp: Date.now(),
+          uid: uId,
+          writenBy: name,
+        }).then((docResponse) => {
+          const docRef = doc(db, "Blog", docResponse?.id);
+          updateDoc(docRef, {
+            id: docResponse?.id,
+            views: view,
+          })
+            .then(() => {
+              getBlogs();
+            })
+            .catch((err) => {
+              toast.error(err);
+            });
+        });
+        setTitle("");
+        setDesc("");
+        toast.success("Blog Added Successfully");
+      }, 500);
     }
   };
 
@@ -204,7 +231,7 @@ const Home = () => {
                       </div>
                       <div className="content-div profile-div">
                         <Card.Text className="text">
-                          by
+                          <FaPenNib />
                           <b
                             onClick={() => navigate(`AllProfiles/${item?.uid}`)}
                           >
@@ -221,6 +248,11 @@ const Home = () => {
                           {`${item.Description.slice(0, 50)}...`}
                         </Card.Text>
                       </div>
+                      <div className="content-div">
+                        <AiOutlineEye />
+                        &nbsp;
+                        {item?.views}
+                      </div>
                       <div className="content-div readmore-div">
                         <div className="last-text">
                           <Card.Text>{date.toLocaleString()}</Card.Text>
@@ -228,7 +260,12 @@ const Home = () => {
                         <div className="last-text">
                           <Card.Text
                             className="read-more text-right"
-                            onClick={() => navigate(`Blog/${item?.id}`)}
+                            onClick={() => {
+                              viewsCounter(item?.id);
+                              setTimeout(() => {
+                                navigate(`Blog/${item?.id}`);
+                              }, 1000);
+                            }}
                           >
                             Continue Reading <ArrowRight />
                           </Card.Text>
