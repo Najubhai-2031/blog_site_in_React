@@ -1,26 +1,50 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { deleteDoc, doc, getDoc, runTransaction } from "firebase/firestore";
+import { AiOutlineEye } from "react-icons/ai";
+import { FaPenNib } from "react-icons/fa";
+import {
+  deleteDoc,
+  doc,
+  getDoc,
+  runTransaction,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../firebase/config";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { toast, ToastContainer } from "react-toastify";
 import { Card, Container } from "react-bootstrap";
 import "./style.css";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const BlogDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
+  const [uid, setUid] = useState("");
   const [desc, setDesc] = useState("");
   const [data, setData] = useState([]);
 
   const getBlogDetail = async () => {
+    const auth = getAuth();
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUid(user?.uid);
+      } else {
+      }
+    });
     const docRef = doc(db, "Blog", id);
     const docSnap = await getDoc(docRef);
-
     if (docSnap.exists()) {
+      const currentView = docSnap.data()?.views;
       setData(docSnap.data());
+      const docRef = doc(db, "Blog", docSnap.data().id);
+      updateDoc(docRef, {
+        id: docSnap.data()?.id,
+        views: currentView + 1,
+      })
+        .then((res) => {})
+        .catch((err) => {});
     } else {
       console.log("No such document!");
     }
@@ -54,7 +78,7 @@ const BlogDetails = () => {
       setDesc("");
       getBlogDetail();
     } catch (e) {
-      console.log("Transaction failed: ", e);
+      toast.error("Transaction failed: ", e);
     }
   };
 
@@ -63,6 +87,7 @@ const BlogDetails = () => {
     document.getElementById("frm").style.display = "none";
     getBlogDetail();
   };
+
   const handleDeleteBlog = async (Id) => {
     let confirmationDelete = window.confirm("Are You Sure?");
     if (confirmationDelete === true) {
@@ -130,24 +155,40 @@ const BlogDetails = () => {
             <Card>
               {/* <Card.Img variant="top" src="holder.js/100px180" /> */}
               <Card.Body>
+                <Card.Text>
+                  <AiOutlineEye /> &nbsp;
+                  {data.views}
+                </Card.Text>
+                <Card.Text
+                  className="text"
+                  onClick={() => navigate(`/AllProfiles/${data?.uid}`)}
+                >
+                  <FaPenNib />
+                  &nbsp;
+                  <b>{data.writenBy}</b>
+                </Card.Text>
                 <Card.Title>{data.Title}</Card.Title>
                 <Card.Text>{data.Description}</Card.Text>
-                <div className="text-center">
-                  <Button
-                    variant="primary me-2"
-                    onClick={() => handleDeleteBlog(data.id)}
-                  >
-                    Delete Blog
-                  </Button>
-                  <Button
-                    variant="primary"
-                    onClick={() =>
-                      handleGetDataforEdit(data.Title, data.Description)
-                    }
-                  >
-                    Edit Blog
-                  </Button>
-                </div>
+                {uid === data.uid ? (
+                  <div className="text-center">
+                    <Button
+                      id="delete-btn"
+                      variant="primary me-2"
+                      onClick={() => handleDeleteBlog(data.id)}
+                    >
+                      Delete Blog
+                    </Button>
+                    <Button
+                      id="edit-btn"
+                      variant="primary"
+                      onClick={() =>
+                        handleGetDataforEdit(data.Title, data.Description)
+                      }
+                    >
+                      Edit Blog
+                    </Button>
+                  </div>
+                ) : null}
               </Card.Body>
             </Card>
           </Container>
