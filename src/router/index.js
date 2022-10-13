@@ -15,7 +15,7 @@ const Router = [
     element: <MainLayout />,
     children: [
       { path: "/", element: <Home /> },
-      { path: "Profile", element: <Profile /> },
+      { path: "Profile/:uid", element: <Profile /> },
       { path: "/Blog/:id", element: <BlogDetails /> },
       { path: "/AllProfiles/:uid", element: <AllProfiles /> },
       { path: "AboutUs", element: <AboutUs /> },
@@ -27,7 +27,7 @@ const Router = [
     children: [
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
-      { path: "forgotepassword", element: <ForgotPass /> }
+      { path: "forgotepassword", element: <ForgotPass /> },
     ],
   },
 ];

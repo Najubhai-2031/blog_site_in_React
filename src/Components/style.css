@@ -8,6 +8,26 @@
   display: none;
 }
 
+#edit-btn {
+  color: green;
+}
+#delete-btn {
+  color: red;
+}
+#edit-btn,
+#delete-btn {
+  background-color: white;
+  margin: 0;
+  padding: 0;
+  border: none;
+  font-size: 25px;
+}
+
+#edit-btn:hover,
+#delete-btn:hover {
+  color: blue;
+}
+
 .main {
   display: flex;
   justify-content: center;
@@ -112,4 +132,31 @@
 
 .commented-on {
   font-size: 12px;
+}
+
+.delete-comment:hover {
+  color: red;
+  cursor: pointer;
+}
+
+#like-btn {
+  border: none;
+  background-color: white;
+  margin: 0;
+  padding: 0;
+  font-size: 18px;
+}
+
+.username-div img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+.like-comment-view-div {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #cbc4c4;
+  border-top: 1px solid #cbc4c4;
+  padding: 10px;
 }
