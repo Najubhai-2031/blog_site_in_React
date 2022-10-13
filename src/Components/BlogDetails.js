@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { AiOutlineEye, AiOutlineDelete } from "react-icons/ai";
+import {
+  AiOutlineEye,
+  AiOutlineDelete,
+  AiOutlineLike,
+  AiOutlineDislike,
+} from "react-icons/ai";
 import { FaPenNib } from "react-icons/fa";
 import {
   addDoc,
@@ -52,7 +57,6 @@ const BlogDetails = () => {
     const blogsUser = data.docs.map((blog) => {
       return blog.data()?.uid;
     });
-    console.log("blogsUser", blogsUser);
 
     Promise.all(blogsUser.map((userID) => getDoc(doc(db, "users", userID))))
       .then((response) => {
@@ -67,8 +71,6 @@ const BlogDetails = () => {
             return { ...blog.data(), displayName: findUser.displayName };
           })
           .sort((a, b) => b.timeStamp - a.timeStamp);
-        console.log("blogData", blogData);
-        // setIsLoading(true);
         setData(blogData);
       })
       .catch((err) => {});
@@ -193,6 +195,28 @@ const BlogDetails = () => {
     }
   };
 
+  const handleLike = async (uid) => {
+    const docRef = doc(db, "Blog", id);
+    const docSnap = await getDoc(docRef);
+    const currentLikes = docSnap.data()?.likes;
+
+    if (!currentLikes.includes(uid)) {
+      updateDoc(docRef, {
+        likes: [...currentLikes, uid],
+      })
+        .then((res) => {})
+        .catch((err) => {});
+    } else {
+      const removedLikes = currentLikes.filter((item) => item !== uid);
+      updateDoc(docRef, {
+        likes: [...removedLikes],
+      })
+        .then((res) => {})
+        .catch((err) => {});
+    }
+    getBlogDetail();
+  };
+
   useEffect(() => {
     getBlogDetail();
     getComments();
@@ -256,7 +280,9 @@ const BlogDetails = () => {
                     <Card.Body>
                       <Card.Text style={{ marginTop: "-15px" }}>
                         <AiOutlineEye />
-                        <span style={{ fontSize: "12px",marginLeft:'5px' }}>{item.views}</span>
+                        <span style={{ fontSize: "12px", marginLeft: "5px" }}>
+                          {item.views}
+                        </span>
                       </Card.Text>
                       <Card.Text style={{ marginTop: "-20px" }}>
                         <span style={{ fontSize: "12px" }}> Published On:</span>
@@ -274,6 +300,31 @@ const BlogDetails = () => {
                       </Card.Text>
                       <Card.Title>{item.title}</Card.Title>
                       <Card.Text>{item.description}</Card.Text>
+                      <Card.Text style={{ fontSize: "20px" }}>
+                        <Button
+                          type="button"
+                          style={{
+                            backgroundColor: "white",
+                            width: "30px",
+                            height: "48px",
+                            padding: "10px",
+                            fontSize: "20px",
+                            marginTop: "-9px",
+                            border: "none",
+                          }}
+                          onClick={() => handleLike(uid)}
+                        >
+                          <AiOutlineLike
+                            style={{
+                              textAlign: "center",
+                              color: item?.likes?.includes(uid)
+                                ? "red"
+                                : "black",
+                            }}
+                          />
+                        </Button>
+                        <span>{item?.likes.length}</span>
+                      </Card.Text>
                       {uid === item.uid ? (
                         <div className="text-center">
                           <Button

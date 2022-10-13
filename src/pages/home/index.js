@@ -29,7 +29,7 @@ const Home = () => {
   const [desc, setDesc] = useState("");
   const [uId, setUId] = useState("");
   const [view] = useState(0);
-  const [name, setName] = useState("");
+  const [like] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState([]);
 
@@ -74,13 +74,6 @@ const Home = () => {
     if (title === "" || desc === "") {
       alert("Please Fill The Details");
     } else {
-      const auth = getAuth();
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          setName(user?.displayName);
-        } else {
-        }
-      });
       setTimeout(() => {
         addDoc(collection(db, "Blog"), {
           title: title,
@@ -92,6 +85,7 @@ const Home = () => {
           updateDoc(docRef, {
             id: docResponse?.id,
             views: view,
+            likes: like,
           })
             .then(() => {
               getBlogs();
