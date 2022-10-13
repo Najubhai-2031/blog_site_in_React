@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import {
-  AiOutlineEye,
-  AiOutlineDelete,
-  AiOutlineLike,
-  AiOutlineDislike,
-} from "react-icons/ai";
+import { FiEdit } from "react-icons/fi";
+import { AiOutlineEye, AiFillDelete, AiFillLike } from "react-icons/ai";
 import { FaPenNib } from "react-icons/fa";
 import {
   addDoc,
   collection,
   deleteDoc,
   doc,
+  documentId,
   getDoc,
   getDocs,
   orderBy,
@@ -36,6 +33,7 @@ const BlogDetails = () => {
   const [desc, setDesc] = useState("");
   const [name, setName] = useState("");
   const [comment, setComment] = useState("");
+  const [isLading, setIsLoading] = useState(false);
   const [data, setData] = useState([]);
   const [comments, setCommments] = useState([]);
 
@@ -58,22 +56,22 @@ const BlogDetails = () => {
       return blog.data()?.uid;
     });
 
-    Promise.all(blogsUser.map((userID) => getDoc(doc(db, "users", userID))))
-      .then((response) => {
-        const users = response?.map((user) => {
-          return user.data();
-        });
-        const blogData = data.docs
-          .map((blog) => {
-            const findUser = users.find(
-              (user) => blog?.data()?.uid === user.id
-            );
-            return { ...blog.data(), displayName: findUser.displayName };
-          })
-          .sort((a, b) => b.timeStamp - a.timeStamp);
-        setData(blogData);
-      })
-      .catch((err) => {});
+    const users = await getDocs(
+      query(collection(db, "users"), where(documentId(), "in", blogsUser))
+    );
+
+    const blogUsers = users.docs.map((user) => user.data());
+    const blogComments = data.docs.map((comment) => comment.data());
+
+    const commentsData = data.docs.map((blog) => {
+      const findUser = blogUsers.find((user) => user?.uId === user.uid);
+      const findComment = blogComments.filter(
+        (comment) => comment.blogId === blog.data().id
+      );
+      return { ...findUser, ...findComment, ...blog.data() };
+    });
+    setIsLoading(true);
+    setData(commentsData);
   };
 
   const getComments = async () => {
@@ -82,32 +80,28 @@ const BlogDetails = () => {
       query(querySnapshot, orderBy("timeStamp"), where("blogId", "==", id))
     );
 
-    const commentList = data.docs.map((comment) => {
-      return comment.data();
-    });
-
     const getCommentUser = data.docs.map((userInfo) => {
       return userInfo.data()?.uId;
     });
 
-    Promise.all(
-      getCommentUser.map((userID) => getDoc(doc(db, "users", userID)))
-    )
-      .then((response) => {
-        const users = response?.map((user) => {
-          return user.data();
-        });
-        const commentData = data.docs
-          .map((comm) => {
-            const findUser = users.find((user) => {
-              return comm?.data()?.uId === user.id;
-            });
-            return { ...comm?.data(), displayName: findUser.displayName };
-          })
-          .sort((a, b) => b.timeStamp - a.timeStamp);
-        setCommments(commentData);
+    const users = await getDocs(
+      query(collection(db, "users"), where(documentId(), "in", getCommentUser))
+    );
+
+    const blogUsers = users.docs.map((user) => user.data());
+    const blogComments = data.docs.map((comment) => comment.data());
+
+    const commentsData = data.docs
+      .map((blog) => {
+        const findUser = blogUsers.find((user) => user?.uId === user.uid);
+        const findComment = blogComments.filter(
+          (comment) => comment.blogId === blog.data().id
+        );
+        return { ...findUser, ...findComment, ...blog.data() };
       })
-      .catch((err) => {});
+      .sort((a, b) => b.timeStamp - a.timeStamp);
+    setIsLoading(true);
+    setCommments(commentsData);
   };
 
   const handleGetDataforEdit = (Title, Description) => {
@@ -270,51 +264,53 @@ const BlogDetails = () => {
       </div>
       <div className="cards">
         <div className="cards-inner">
-          <Container>
-            {data.map((item) => {
-              var date = new Date(item.timeStamp);
-              return (
-                <div>
-                  <Card>
-                    {/* <Card.Img variant="top" src="holder.js/100px180" /> */}
-                    <Card.Body>
-                      <Card.Text style={{ marginTop: "-15px" }}>
-                        <AiOutlineEye />
-                        <span style={{ fontSize: "12px", marginLeft: "5px" }}>
-                          {item.views}
-                        </span>
-                      </Card.Text>
-                      <Card.Text style={{ marginTop: "-20px" }}>
-                        <span style={{ fontSize: "12px" }}> Published On:</span>
-                        <span style={{ fontWeight: "500", fontSize: "12px" }}>
-                          {date.toLocaleString()}
-                        </span>
-                      </Card.Text>
-                      <Card.Text
-                        className="text"
-                        onClick={() => navigate(`/AllProfiles/${item?.uid}`)}
-                      >
-                        <FaPenNib />
-                        &nbsp;
-                        <b>{item.displayName}</b>
-                      </Card.Text>
-                      <Card.Title>{item.title}</Card.Title>
-                      <Card.Text>{item.description}</Card.Text>
-                      <Card.Text style={{ fontSize: "20px" }}>
-                        <Button
-                          type="button"
-                          style={{
-                            backgroundColor: "white",
-                            width: "30px",
-                            height: "48px",
-                            padding: "10px",
-                            fontSize: "20px",
-                            marginTop: "-9px",
-                            border: "none",
-                          }}
-                          onClick={() => handleLike(uid)}
+          {!isLading ? (
+            <React.Fragment>
+              <div>
+                <p className="text-center">Loading...</p>
+              </div>
+            </React.Fragment>
+          ) : (
+            <Container>
+              {data.map((item) => {
+                var date = new Date(item.timeStamp);
+                return (
+                  <div>
+                    <Card>
+                      {/* <Card.Img variant="top" src="holder.js/100px180" /> */}
+                      <Card.Body>
+                        <Card.Text style={{ marginTop: "-15px" }}>
+                          <AiOutlineEye />
+                          <span style={{ fontSize: "12px", marginLeft: "5px" }}>
+                            {item.views}
+                          </span>
+                        </Card.Text>
+                        <Card.Text style={{ marginTop: "-20px" }}>
+                          <span style={{ fontSize: "12px" }}>
+                            {" "}
+                            Published On:
+                          </span>
+                          <span style={{ fontWeight: "500", fontSize: "12px" }}>
+                            {date.toLocaleString()}
+                          </span>
+                        </Card.Text>
+                        <Card.Text
+                          className="text"
+                          onClick={() => navigate(`/Profile/${item?.uid}`)}
                         >
-                          <AiOutlineLike
+                          <FaPenNib />
+                          &nbsp;
+                          <b>{item.displayName}</b>
+                        </Card.Text>
+                        <Card.Title>{item.title}</Card.Title>
+                        <Card.Text>{item.description}</Card.Text>
+                        <Button
+                          id="like-btn"
+                          variant="primary me-1"
+                          onClick={() => handleLike(uid)}
+                          style={{ marginTop: "-10px" }}
+                        >
+                          <AiFillLike
                             style={{
                               textAlign: "center",
                               color: item?.likes?.includes(uid)
@@ -323,34 +319,39 @@ const BlogDetails = () => {
                             }}
                           />
                         </Button>
-                        <span>{item?.likes.length}</span>
-                      </Card.Text>
-                      {uid === item.uid ? (
-                        <div className="text-center">
-                          <Button
-                            id="delete-btn"
-                            variant="primary me-2"
-                            onClick={() => handleDeleteBlog(item.id)}
-                          >
-                            Delete Blog
-                          </Button>
-                          <Button
-                            id="edit-btn"
-                            variant="primary"
-                            onClick={() =>
-                              handleGetDataforEdit(item.title, item.description)
-                            }
-                          >
-                            Edit Blog
-                          </Button>
-                        </div>
-                      ) : null}
-                    </Card.Body>
-                  </Card>
-                </div>
-              );
-            })}
-          </Container>
+                        <span style={{ fontSize: "18px" }}>
+                          {item?.likes.length}
+                        </span>
+                        {uid === item.uid ? (
+                          <div className="text-center">
+                            <Button
+                              id="delete-btn"
+                              variant="primary me-2"
+                              onClick={() => handleDeleteBlog(item.id)}
+                            >
+                              <AiFillDelete />
+                            </Button>
+                            <Button
+                              id="edit-btn"
+                              variant="primary"
+                              onClick={() =>
+                                handleGetDataforEdit(
+                                  item.title,
+                                  item.description
+                                )
+                              }
+                            >
+                              <FiEdit />
+                            </Button>
+                          </div>
+                        ) : null}
+                      </Card.Body>
+                    </Card>
+                  </div>
+                );
+              })}
+            </Container>
+          )}
         </div>
       </div>
 
@@ -364,7 +365,7 @@ const BlogDetails = () => {
             <div className="comment-inner">
               <div
                 className="name-show"
-                onClick={() => navigate(`/AllProfiles/${uid}`)}
+                onClick={() => navigate(`/Profile/${uid}`)}
               >
                 <span> {name}</span>
               </div>
@@ -397,44 +398,52 @@ const BlogDetails = () => {
 
       {/* Start -- Show Comments Section */}
       <div className="comments-show-div">
-        <Container>
-          <h5>Comments</h5>
-          {comments.map((item) => {
-            var date = new Date(item?.timeStamp);
-            return (
-              <div className="each-comment">
-                <div>
-                  <div
-                    className="name-and-date"
-                    onClick={() => navigate(`/AllProfiles/${item?.uId}`)}
-                  >
-                    <span>{item?.displayName}</span>
-                  </div>
-                  <div
-                    className="commented-on"
-                    style={{ marginTop: "6px", marginBottom: "6px" }}
-                  >
-                    {" "}
-                    <span style={{ fontWeight: "500" }}>Commented On: </span>
-                    <span style={{ fontWeight: "600" }}>
-                      {date.toLocaleString()}
-                    </span>
-                  </div>
+        {!isLading ? (
+          <React.Fragment>
+            <div>
+              <p className="text-center">Loading...</p>
+            </div>
+          </React.Fragment>
+        ) : (
+          <Container>
+            <h5>Comments</h5>
+            {comments.map((item) => {
+              var date = new Date(item?.timeStamp);
+              return (
+                <div className="each-comment">
                   <div>
-                    <p>{item?.comment}</p>
+                    <div
+                      className="name-and-date"
+                      onClick={() => navigate(`/Profile/${item?.uId}`)}
+                    >
+                      <span>{item?.displayName}</span>
+                    </div>
+                    <div
+                      className="commented-on"
+                      style={{ marginTop: "6px", marginBottom: "6px" }}
+                    >
+                      {" "}
+                      <span style={{ fontWeight: "500" }}>Commented On: </span>
+                      <span style={{ fontWeight: "600" }}>
+                        {date.toLocaleString()}
+                      </span>
+                    </div>
+                    <div>
+                      <p>{item?.comment}</p>
+                    </div>
                   </div>
+                  {uid === item?.uId ? (
+                    <div className="delete-comment">
+                      <AiFillDelete
+                        onClick={() => handleDeleteComments(item?.id)}
+                      />
+                    </div>
+                  ) : null}
                 </div>
-                {uid === item?.uId ? (
-                  <div className="delete">
-                    <AiOutlineDelete
-                      onClick={() => handleDeleteComments(item?.id)}
-                    />
-                  </div>
-                ) : null}
-              </div>
-            );
-          })}
-        </Container>
+              );
+            })}
+          </Container>
+        )}
       </div>
       {/* End -- Show Comments Section */}
     </React.Fragment>
