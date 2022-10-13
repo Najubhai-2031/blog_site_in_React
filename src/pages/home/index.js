@@ -11,6 +11,8 @@ import {
   updateDoc,
   doc,
   getDoc,
+  where,
+  documentId,
 } from "firebase/firestore";
 import React, { useEffect, useRef, useState } from "react";
 import { Container } from "react-bootstrap";
@@ -50,23 +52,22 @@ const Home = () => {
       return blog.data()?.uid;
     });
 
-    Promise.all(blogsUser.map((userID) => getDoc(doc(db, "users", userID))))
-      .then((response) => {
-        const users = response?.map((user) => {
-          return user.data();
-        });
-        const blogData = data.docs
-          .map((blog) => {
-            const findUser = users.find(
-              (user) => blog?.data()?.uid === user.id
-            );
-            return { ...blog.data(), displayName: findUser.displayName };
-          })
-          .sort((a, b) => b.timeStamp - a.timeStamp);
-        setIsLoading(true);
-        setData(blogData);
+    const users = await getDocs(
+      query(collection(db, "users"), where(documentId(), "in", blogsUser))
+    );
+
+    const blogUsers = users.docs.map((user) => user.data());
+
+    const commentsData = data.docs
+      .map((blog) => {
+        const findUser = blogUsers.find(
+          (user) => blog?.data()?.uid === user.id
+        );
+        return { ...findUser, ...blog.data() };
       })
-      .catch((err) => {});
+      .sort((a, b) => b.timeStamp - a.timeStamp);
+    setIsLoading(true);
+    setData(commentsData);
   };
 
   const handleSubmit = (event) => {
@@ -114,7 +115,7 @@ const Home = () => {
     })
       .then((res) => {})
       .catch((err) => {});
-    navigate(`Blog/${id}`);
+    navigate(`/Blog/${id}`);
   };
 
   return (
@@ -171,9 +172,7 @@ const Home = () => {
                       <div className="content-div profile-div">
                         <Card.Text className="text">
                           <FaPenNib />
-                          <b
-                            onClick={() => navigate(`AllProfiles/${item?.uid}`)}
-                          >
+                          <b onClick={() => navigate(`/Profile/${item?.uid}`)}>
                             {item.displayName}
                           </b>
                         </Card.Text>
