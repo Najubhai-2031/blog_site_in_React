@@ -1,7 +1,4 @@
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { FaPenNib } from "react-icons/fa";
-import { ArrowRight } from "react-bootstrap-icons";
-import { AiOutlineEye } from "react-icons/ai";
 import {
   addDoc,
   collection,
@@ -14,25 +11,27 @@ import {
   where,
   documentId,
 } from "firebase/firestore";
-import React, { useEffect, useRef, useState } from "react";
-import { Container } from "react-bootstrap";
+import React, { useEffect, useState } from "react";
+import { Container, Modal } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
-import Card from "react-bootstrap/Card";
 import Form from "react-bootstrap/Form";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { db } from "../../firebase/config";
 import "./style.css";
+import BlogCard from "../../Components/BlogCard";
+import Comments from "../../Components/Comments";
 
 const Home = () => {
-  const getValue = useRef();
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [uId, setUId] = useState("");
   const [view] = useState(0);
   const [like] = useState([]);
+  const [modalShow, setModalShow] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [commentId, setCommentId] = useState(null);
   const [data, setData] = useState([]);
 
   const navigate = useNavigate();
@@ -52,6 +51,16 @@ const Home = () => {
       return blog.data()?.uid;
     });
 
+    const getBlogId = data.docs.map((blogId) => {
+      return blogId.data()?.id;
+    });
+
+    const comments = await getDocs(
+      query(collection(db, "Comments"), where("blogId", "in", getBlogId))
+    );
+
+    const blogComments = comments.docs.map((comment) => comment.data());
+
     const users = await getDocs(
       query(collection(db, "users"), where(documentId(), "in", blogsUser))
     );
@@ -63,11 +72,19 @@ const Home = () => {
         const findUser = blogUsers.find(
           (user) => blog?.data()?.uid === user.id
         );
-        return { ...findUser, ...blog.data() };
+        const findComment = blogComments.filter(
+          (comment) => comment.blogId === blog.data().id
+        );
+        return { ...findUser, comments: findComment, ...blog.data() };
       })
       .sort((a, b) => b.timeStamp - a.timeStamp);
     setIsLoading(true);
     setData(commentsData);
+  };
+
+  const handleOpenComments = (id) => {
+    setModalShow(true);
+    setCommentId(id);
   };
 
   const handleSubmit = (event) => {
@@ -164,54 +181,44 @@ const Home = () => {
               var date = new Date(item.timeStamp);
               return (
                 <div className="cards-inner" key={item?.id}>
-                  <Card>
-                    <Card.Body>
-                      <div className="content-div title-div">
-                        <Card.Title>{item.title}</Card.Title>
-                      </div>
-                      <div className="content-div profile-div">
-                        <Card.Text className="text">
-                          <FaPenNib />
-                          <b onClick={() => navigate(`/Profile/${item?.uid}`)}>
-                            {item.displayName}
-                          </b>
-                        </Card.Text>
-                      </div>
-                      <div className="content-div description-div">
-                        <Card.Text
-                          ref={getValue}
-                          value={desc}
-                          id="sort-description"
-                        >
-                          {`${item.description.slice(0, 150)}...`}
-                        </Card.Text>
-                      </div>
-                      <div className="content-div">
-                        <AiOutlineEye />
-                        &nbsp;
-                        {item?.views}
-                      </div>
-                      <div className="content-div readmore-div">
-                        <div className="last-text">
-                          <Card.Text>{date.toLocaleString()}</Card.Text>
-                        </div>
-                        <div className="last-text">
-                          <Card.Text
-                            className="read-more text-right"
-                            onClick={() => handleNavigate(item?.id)}
-                          >
-                            Continue Reading <ArrowRight />
-                          </Card.Text>
-                        </div>
-                      </div>
-                    </Card.Body>
-                  </Card>
+                  <BlogCard
+                    title={item.title}
+                    name={item.displayName}
+                    description={`${item.description.slice(0, 150)}...`}
+                    uid={item?.uid}
+                    views={item?.views}
+                    date={date.toLocaleString()}
+                    id={item?.id}
+                    liked={item?.likes?.includes(item?.uid)}
+                    likes={item?.likes?.length}
+                    handleNavigate={() => handleNavigate(item?.id)}
+                    commentsLength={item?.comments?.length}
+                    showEditDeleteButton={false}
+                    handleOpenComments={() => handleOpenComments(item?.id)}
+                    getAllData={getBlogs}
+                  />
                 </div>
               );
             })}
           </Container>
         )}
       </div>
+      <React.Fragment>
+        <Modal
+          show={modalShow}
+          size="lg"
+          aria-labelledby="contained-modal-title-vcenter"
+          centered
+        >
+          <Comments id={commentId} getAllData={getBlogs} />
+          <Modal.Footer>
+            <Button show={modalShow} onClick={() => setModalShow(false)}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+        {/* Modal Code End */}
+      </React.Fragment>
     </React.Fragment>
   );
 };
