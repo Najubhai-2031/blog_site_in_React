@@ -14,30 +14,9 @@ const BlogCard = (props) => {
   const { showEditDeleteButton = true } = props;
   const navigate = useNavigate("");
 
-  const handleLike = async (uid) => {
-    const docRef = doc(db, "Blog", props?.id);
-    const docSnap = await getDoc(docRef);
-    const currentLikes = docSnap.data()?.likes;
-
-    if (!currentLikes.includes(uid)) {
-      updateDoc(docRef, {
-        likes: [...currentLikes, uid],
-      })
-        .then((res) => {})
-        .catch((err) => {});
-    } else {
-      const removedLikes = currentLikes.filter((item) => item !== uid);
-      updateDoc(docRef, {
-        likes: [...removedLikes],
-      })
-        .then((res) => {})
-        .catch((err) => {});
-    }
-    props?.getAllData();
-  };
   return (
     <React.Fragment>
-      <Card>
+      <Card style={{ marginTop: "-20px" }}>
         <Card.Body>
           <div>
             <div className="card-and-three-dot">
@@ -67,7 +46,7 @@ const BlogCard = (props) => {
                     <FaComment />
                     {props?.commentsLength}
                   </div>
-                  <div onClick={() => handleLike(props?.uid)}>
+                  <div onClick={props?.handleLike}>
                     <AiFillLike
                       style={{
                         cursor: "pointer",

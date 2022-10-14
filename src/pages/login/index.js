@@ -22,7 +22,6 @@ const Login = (props) => {
         .then((userCredential) => {
           localStorage.setItem("user", JSON.stringify(userCredential));
           const user = userCredential.user;
-          console.log(user);
           toast.success("Welcome Back!");
           setTimeout(() => {
             navigate("/");

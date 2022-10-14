@@ -119,6 +119,29 @@ const Home = () => {
     }
   };
 
+  const handleLike = async (uid, id) => {
+    const docRef = doc(db, "Blog", id);
+    const docSnap = await getDoc(docRef);
+    const currentLikes = docSnap.data()?.likes;
+
+    if (!currentLikes.includes(uid)) {
+      updateDoc(docRef, {
+        likes: [...currentLikes, uid],
+      })
+        .then((res) => {})
+        .catch((err) => {});
+      getBlogs();
+    } else {
+      const removedLikes = currentLikes.filter((item) => item !== uid);
+      updateDoc(docRef, {
+        likes: [...removedLikes],
+      })
+        .then((res) => {})
+        .catch((err) => {});
+      getBlogs();
+    }
+  };
+
   useEffect(() => {
     getBlogs();
   }, []);
@@ -189,8 +212,9 @@ const Home = () => {
                     views={item?.views}
                     date={date.toLocaleString()}
                     id={item?.id}
-                    liked={item?.likes?.includes(item?.uid)}
+                    liked={item?.likes?.includes(uId)}
                     likes={item?.likes?.length}
+                    handleLike={() => handleLike(uId, item?.id)}
                     handleNavigate={() => handleNavigate(item?.id)}
                     commentsLength={item?.comments?.length}
                     showEditDeleteButton={false}

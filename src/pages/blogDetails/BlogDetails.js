@@ -218,7 +218,7 @@ const BlogDetails = () => {
               {data.map((item) => {
                 var date = new Date(item.timeStamp);
                 return (
-                  <div className="card-with-three-dot">
+                  <div className="card-with-three-dot" key={item?.id}>
                     <BlogCard
                       title={item?.title}
                       name={item?.displayName}
@@ -227,7 +227,7 @@ const BlogDetails = () => {
                       views={item?.views}
                       date={date?.toLocaleString()}
                       id={item?.id}
-                      handleLike={handleLike}
+                      handleLike={() => handleLike(uid)}
                       liked={item?.likes?.includes(uid)}
                       commentsLength={item?.comments?.length}
                       likes={item?.likes?.length}
@@ -245,7 +245,7 @@ const BlogDetails = () => {
           )}
         </div>
       </div>
-      <Comments id={id} getBlogDetail={getBlogDetail} />
+      <Comments id={id} getAllData={getBlogDetail} />
 
       <React.Fragment>
         <Modal show={show} onHide={() => setShow(false)}>
