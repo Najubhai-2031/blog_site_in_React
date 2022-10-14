@@ -16,7 +16,7 @@ const AboutUs = () => {
           performing web applications and attain the desired solution for your
           business vision.
         </p>
-      </Container>
+      </Container>  
     </React.Fragment>
   );
 };

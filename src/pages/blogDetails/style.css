@@ -130,6 +130,9 @@
   margin-left: 30px;
 }
 
+.description-div {
+  height: auto;
+}
 .commented-on {
   font-size: 12px;
 }
@@ -161,6 +164,11 @@
   padding: 10px;
 }
 
+.card-with-three-dot {
+  display: flex;
+  justify-content: space-between;
+}
+
 .three-dot button {
   background-color: white;
   border: 0px;
@@ -173,18 +181,4 @@
 .three-dot button:hover {
   background-color: white;
   border: 0px;
-}
-
-.description-div,
-.title-div,
-.profile-div,
-.like-comment-view-div,
-.readmore-div {
-  height: auto;
-  margin-bottom: 3px;
-}
-
-.card-and-three-dot {
-  display: flex;
-  justify-content: space-between;
 }
