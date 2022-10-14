@@ -30,24 +30,15 @@ const Profile = (props) => {
   const navigate = useNavigate("");
 
   const getUserData = async () => {
-    const blogQuery = collection(db, "Blog");
-    const data = await getDocs(
-      query(blogQuery, orderBy("timeStamp"), where("uid", "==", uid))
-    );
+    const docRef = doc(db, "users", uid);
+    const docSnap = await getDoc(docRef);
 
-    const blogsUser = data.docs.map((blog) => {
-      return blog.data()?.uid;
-    });
-
-    const users = await getDocs(
-      query(collection(db, "users"), where(documentId(), "in", blogsUser))
-    );
-
-    const blogUsers = users.docs.map((user) => user.data());
-
-    const findUser = blogUsers.find((user) => user.id === uid);
-    setIsLoading(true);
-    setUser(findUser);
+    if (docSnap.exists()) {
+      setIsLoading(true);
+      setUser(docSnap.data());
+    } else {
+      setUser("User Doesn't Exist");
+    }
   };
 
   const getAllData = async () => {
@@ -60,30 +51,39 @@ const Profile = (props) => {
       return blog.data()?.uid;
     });
 
-    const getBlogId = data.docs.map((blogId) => {
-      return blogId.data()?.id;
-    });
+    if (blogsUser?.length) {
+      const getBlogId = data.docs.map((blogId) => {
+        return blogId.data()?.id;
+      });
 
-    const users = await getDocs(
-      query(collection(db, "users"), where(documentId(), "in", blogsUser))
-    );
-
-    const comments = await getDocs(
-      query(collection(db, "Comments"), where("blogId", "in", getBlogId))
-    );
-
-    const blogUsers = users.docs.map((user) => user.data());
-    const blogComments = comments.docs.map((comment) => comment.data());
-
-    const blogData = data.docs.map((blog) => {
-      const findUser = blogUsers.find((user) => user.id === blog.data().uid);
-      const findComment = blogComments.filter(
-        (comment) => comment.blogId === blog.data().id
+      const users = await getDocs(
+        query(collection(db, "users"), where(documentId(), "in", blogsUser))
       );
-      return { ...findUser, comments: findComment, ...blog.data() };
-    });
-    setIsLoading(true);
-    setData(blogData);
+
+      const comments = await getDocs(
+        query(collection(db, "Comments"), where("blogId", "in", getBlogId))
+      );
+
+      const blogUsers = users.docs.map((user) => user.data());
+      const blogComments = comments.docs.map((comment) => comment.data());
+
+      const blogData = data.docs
+        .map((blog) => {
+          const findUser = blogUsers.find(
+            (user) => user.id === blog.data().uid
+          );
+          const findComment = blogComments.filter(
+            (comment) => comment.blogId === blog.data().id
+          );
+          return { ...findUser, comments: findComment, ...blog.data() };
+        })
+        .sort((a, b) => b.timeStamp - a.timeStamp);
+      setIsLoading(true);
+      setData(blogData);
+    } else {
+      setIsLoading(true);
+      setData([]);
+    }
   };
 
   const handleOpenComments = (id) => {
@@ -101,6 +101,28 @@ const Profile = (props) => {
       .then((res) => {})
       .catch((err) => {});
     navigate(`/Blog/${id}`);
+  };
+
+  const handleLike = async (uid, id) => {
+    const docRef = doc(db, "Blog", id);
+    const docSnap = await getDoc(docRef);
+    const currentLikes = docSnap.data()?.likes;
+
+    if (!currentLikes.includes(uid)) {
+      updateDoc(docRef, {
+        likes: [...currentLikes, uid],
+      })
+        .then((res) => {})
+        .catch((err) => {});
+    } else {
+      const removedLikes = currentLikes.filter((item) => item !== uid);
+      updateDoc(docRef, {
+        likes: [...removedLikes],
+      })
+        .then((res) => {})
+        .catch((err) => {});
+    }
+    getAllData();
   };
 
   useEffect(() => {
@@ -164,40 +186,52 @@ const Profile = (props) => {
         <div>
           <Container>
             <div>
-              <Container className="card">
-                {data.map((item) => {
-                  var date = new Date(item.timeStamp);
-                  return (
-                    <div className="cards-inner" key={item?.id}>
+              {data.length ? (
+                <Container className="card">
+                  {data.map((item) => {
+                    var date = new Date(item.timeStamp);
+                    return (
                       <div className="cards-inner" key={item?.id}>
-                        <BlogCard
-                          title={item?.title}
-                          name={item?.displayName}
-                          description={`${item?.description?.slice(0, 550)}...`}
-                          uid={item?.uid}
-                          views={item?.views}
-                          date={date?.toLocaleString()}
-                          id={item?.id}
-                          handleNavigate={() => handleNavigate(item?.id)}
-                          handleOpenComments={() =>
-                            handleOpenComments(item?.id)
-                          }
-                          liked={item?.likes?.includes(uid)}
-                          commentsLength={item?.comments?.length}
-                          likes={item?.likes?.length}
-                          showEditDeleteButton={false}
-                          getAllData={getAllData}
-                        />
+                        <div className="cards-inner">
+                          <BlogCard
+                            title={item?.title}
+                            name={item?.displayName}
+                            description={`${item?.description?.slice(
+                              0,
+                              550
+                            )}...`}
+                            uid={item?.uid}
+                            views={item?.views}
+                            date={date?.toLocaleString()}
+                            id={item?.id}
+                            handleLike={() => handleLike(uid, item?.id)}
+                            handleNavigate={() => handleNavigate(item?.id)}
+                            handleOpenComments={() =>
+                              handleOpenComments(item?.id)
+                            }
+                            liked={item?.likes?.includes(uid)}
+                            commentsLength={item?.comments?.length}
+                            likes={item?.likes?.length}
+                            showEditDeleteButton={false}
+                            getAllData={getAllData}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </Container>
+                    );
+                  })}
+                </Container>
+              ) : (
+                <Container>
+                  <div>
+                    <h3>No Posts Yet!!!</h3>
+                  </div>
+                </Container>
+              )}
             </div>
           </Container>
         </div>
-        {/* Modal Code Start */}
 
+        {/* Modal Code Start */}
         <Modal
           show={modalShow}
           size="lg"
