@@ -22,7 +22,8 @@ const Comments = (props) => {
   const [name, setName] = useState("");
   const [uid, setUid] = useState("");
   const [comment, setComment] = useState("");
-  const [isLading, setIsLoading] = useState(false);
+  const [isLading, setIsLoading] = useState(true);
+  console.log("isLading", isLading);
   const [comments, setCommments] = useState([]);
   const navigate = useNavigate("");
 
@@ -44,7 +45,6 @@ const Comments = (props) => {
           .then(() => {
             getComments();
             props?.getAllData();
-            props.getBlogDetail();
           })
           .catch((err) => {});
       });
@@ -74,35 +74,44 @@ const Comments = (props) => {
     const getCommentUser = data.docs.map((userInfo) => {
       return userInfo.data()?.uId;
     });
+    if (getCommentUser?.length) {
+      const users = await getDocs(
+        query(
+          collection(db, "users"),
+          where(documentId(), "in", getCommentUser)
+        )
+      );
 
-    const users = await getDocs(
-      query(collection(db, "users"), where(documentId(), "in", getCommentUser))
-    );
+      const blogUsers = users.docs.map((user) => user.data());
+      const blogComments = data.docs.map((comment) => comment.data());
 
-    const blogUsers = users.docs.map((user) => user.data());
-    const blogComments = data.docs.map((comment) => comment.data());
-
-    const commentsData = data.docs
-      .map((blog) => {
-        const findUser = blogUsers.find((user) => user?.uId === user.uid);
-        const findComment = blogComments.filter(
-          (comment) => comment.blogId === blog.data().id
-        );
-        return { ...findUser, ...findComment, ...blog.data() };
-      })
-      .sort((a, b) => b.timeStamp - a.timeStamp);
-    setIsLoading(true);
-    setCommments(commentsData);
-    props?.getAllData();
+      const commentsData = data.docs
+        .map((blog) => {
+          const findUser = blogUsers.find((user) => user?.uId === user.uid);
+          const findComment = blogComments.filter(
+            (comment) => comment.blogId === blog.data().id
+          );
+          return { ...findUser, ...findComment, ...blog.data() };
+        })
+        .sort((a, b) => b.timeStamp - a.timeStamp);
+      setIsLoading(false);
+      setCommments(commentsData);
+      props?.getAllData();
+    } else {
+      setIsLoading(false);
+      setCommments([]);
+    }
   };
 
   const handleDeleteComments = async (commentId) => {
     let confirmationDelete = window.confirm("Are You Sure?");
     if (confirmationDelete === true) {
-      toast.success("Comment Deleted Successefully");
       await deleteDoc(doc(db, "Comments", commentId));
-      getComments();
-      props.getAllData();
+      toast.success("Comment Deleted Successefully");
+      setCommments((prevState) => {
+        return prevState?.filter((comment) => comment?.id !== commentId);
+      });
+      props?.getAllData();
     }
   };
 
@@ -155,7 +164,7 @@ const Comments = (props) => {
 
       {/* Start -- Show Comments Section */}
       <div className="comments-show-div">
-        {!isLading ? (
+        {isLading ? (
           <React.Fragment>
             <div>
               <p className="text-center">Loading...</p>
@@ -163,41 +172,53 @@ const Comments = (props) => {
           </React.Fragment>
         ) : (
           <Container>
-            <h5>Comments</h5>
-            {comments.map((item) => {
-              var date = new Date(item?.timeStamp);
-              return (
-                <div className="each-comment">
-                  <div>
-                    <div
-                      className="name-and-date"
-                      onClick={() => navigate(`/Profile/${item?.uId}`)}
-                    >
-                      <span>{item?.displayName}</span>
+            <div>
+              <h5>Comments</h5>
+            </div>
+            {comments.length ? (
+              <Container>
+                {comments.map((item) => {
+                  var date = new Date(item?.timeStamp);
+                  return (
+                    <div className="each-comment" key={item?.id}>
+                      <div>
+                        <div
+                          className="name-and-date"
+                          onClick={() => navigate(`/Profile/${item?.uId}`)}
+                        >
+                          <span>{item?.displayName}</span>
+                        </div>
+                        <div
+                          className="commented-on"
+                          style={{ marginTop: "6px", marginBottom: "6px" }}
+                        >
+                          <span style={{ fontWeight: "500" }}>
+                            Commented On:{" "}
+                          </span>
+                          <span style={{ fontWeight: "600" }}>
+                            {date.toLocaleString()}
+                          </span>
+                        </div>
+                        <div>
+                          <p>{item?.comment}</p>
+                        </div>
+                      </div>
+                      {uid === item?.uId ? (
+                        <div className="delete-comment">
+                          <AiFillDelete
+                            onClick={() => handleDeleteComments(item?.id)}
+                          />
+                        </div>
+                      ) : null}
                     </div>
-                    <div
-                      className="commented-on"
-                      style={{ marginTop: "6px", marginBottom: "6px" }}
-                    >
-                      <span style={{ fontWeight: "500" }}>Commented On: </span>
-                      <span style={{ fontWeight: "600" }}>
-                        {date.toLocaleString()}
-                      </span>
-                    </div>
-                    <div>
-                      <p>{item?.comment}</p>
-                    </div>
-                  </div>
-                  {uid === item?.uId ? (
-                    <div className="delete-comment">
-                      <AiFillDelete
-                        onClick={() => handleDeleteComments(item?.id)}
-                      />
-                    </div>
-                  ) : null}
-                </div>
-              );
-            })}
+                  );
+                })}
+              </Container>
+            ) : (
+              <div>
+                <h2>No comments Found</h2>
+              </div>
+            )}
           </Container>
         )}
       </div>
