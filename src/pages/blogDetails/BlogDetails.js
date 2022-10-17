@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { FiEdit } from "react-icons/fi";
-import { AiOutlineEye, AiFillDelete, AiFillLike } from "react-icons/ai";
-import { FaPenNib } from "react-icons/fa";
 import {
   collection,
   deleteDoc,
@@ -20,7 +17,7 @@ import { db } from "../../firebase/config";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { toast, ToastContainer } from "react-toastify";
-import { Card, Container, Dropdown, Modal } from "react-bootstrap";
+import { Container, Modal } from "react-bootstrap";
 import "./style.css";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import Comments from "../../Components/Comments";

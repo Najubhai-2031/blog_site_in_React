@@ -23,7 +23,6 @@ const Comments = (props) => {
   const [uid, setUid] = useState("");
   const [comment, setComment] = useState("");
   const [isLading, setIsLoading] = useState(true);
-  console.log("isLading", isLading);
   const [comments, setCommments] = useState([]);
   const navigate = useNavigate("");
 

@@ -6,8 +6,6 @@ import { AiFillDelete, AiFillLike, AiOutlineEye } from "react-icons/ai";
 import { FaComment, FaPenNib } from "react-icons/fa";
 import { FiEdit } from "react-icons/fi";
 import { useNavigate } from "react-router";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db } from "../firebase/config";
 
 const BlogCard = (props) => {
   const { showContinueButton = true } = props;

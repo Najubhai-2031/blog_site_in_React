@@ -1,4 +1,3 @@
-import AllProfiles from "../Components/UserProfile";
 import AuthenticationLayout from "../Components/layout/AuthenticationLayout";
 import MainLayout from "../Components/layout/MainLayout";
 import Profile from "../pages/profile/Profile";

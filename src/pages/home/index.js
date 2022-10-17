@@ -202,10 +202,11 @@ const Home = () => {
           <Container className="cards">
             {data.map((item) => {
               var date = new Date(item.timeStamp);
+              var title = item?.title;
               return (
                 <div className="cards-inner" key={item?.id}>
                   <BlogCard
-                    title={item.title}
+                    title={`${title.slice(0, 25)}...`}
                     name={item.displayName}
                     description={`${item.description.slice(0, 150)}...`}
                     uid={item?.uid}
@@ -219,7 +220,6 @@ const Home = () => {
                     commentsLength={item?.comments?.length}
                     showEditDeleteButton={false}
                     handleOpenComments={() => handleOpenComments(item?.id)}
-                    getAllData={getBlogs}
                   />
                 </div>
               );
@@ -227,6 +227,7 @@ const Home = () => {
           </Container>
         )}
       </div>
+      {/* Modal Code Start */}
       <React.Fragment>
         <Modal
           show={modalShow}
@@ -241,8 +242,8 @@ const Home = () => {
             </Button>
           </Modal.Footer>
         </Modal>
-        {/* Modal Code End */}
       </React.Fragment>
+      {/* Modal Code End */}
     </React.Fragment>
   );
 };

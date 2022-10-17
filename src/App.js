@@ -11,7 +11,7 @@ const App = () => {
       if (user) {
         localStorage.setItem("user", JSON.stringify(user));
       } else {
-        localStorage.remove("user");
+        localStorage.removeItem("user");
       }
     });
   }, []);
