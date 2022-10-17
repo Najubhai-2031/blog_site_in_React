@@ -9,20 +9,14 @@ import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "../firebase/config";
 import { Nav } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { logout } from "../store/user/action";
 
 const Header = () => {
   const [name, setName] = useState("");
   const [uid, setUid] = useState("");
   const navigate = useNavigate();
-
-  const logout = () => {
-    signOut(auth)
-      .then(() => {
-        localStorage.clear();
-        navigate("/auth/login");
-      })
-      .catch((error) => {});
-  };
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const auth = getAuth();
@@ -66,7 +60,7 @@ const Header = () => {
               >
                 <CgProfile /> Profile
               </Dropdown.Item>
-              <Dropdown.Item href="#" onClick={logout}>
+              <Dropdown.Item href="#" onClick={() => dispatch(logout())}>
                 <FiLogOut /> Logout
               </Dropdown.Item>
             </Dropdown.Menu>

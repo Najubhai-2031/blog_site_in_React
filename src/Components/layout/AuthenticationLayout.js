@@ -1,8 +1,9 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import { Navigate, Outlet } from "react-router";
 
 const AuthenticationLayout = () => {
-  const user = localStorage.getItem("user");
+  const user = useSelector((state) => state?.user);
 
   return <div>{!user ? <Outlet /> : <Navigate to="/" />}</div>;
 };

@@ -7,31 +7,35 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase/config";
+import { useDispatch } from "react-redux";
+import { loginUser } from "../../store/user/action";
 
 const Login = (props) => {
   const [error, setError] = useState({});
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleSubmit = (event) => {
     event.preventDefault();
     let isValid = loginValidation();
     if (isValid) {
-      signInWithEmailAndPassword(auth, email, pass)
-        .then((userCredential) => {
-          localStorage.setItem("user", JSON.stringify(userCredential));
-          const user = userCredential.user;
-          toast.success("Welcome Back!");
-          setTimeout(() => {
-            navigate("/");
-          }, 1000);
-        })
-        .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          toast.error(`${errorCode} - ${errorMessage}`);
-        });
+      dispatch(loginUser({ email, pass }));
+      // signInWithEmailAndPassword(auth, email, pass)
+      //   .then((userCredential) => {
+      //     localStorage.setItem("user", JSON.stringify(userCredential));
+      //     const user = userCredential.user;
+      //     toast.success("Welcome Back!");
+      //     setTimeout(() => {
+      //       navigate("/");
+      //     }, 1000);
+      //   })
+      //   .catch((error) => {
+      //     const errorCode = error.code;
+      //     const errorMessage = error.message;
+      //     toast.error(`${errorCode} - ${errorMessage}`);
+      //   });
     }
   };
 
