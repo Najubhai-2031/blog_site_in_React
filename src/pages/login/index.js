@@ -8,7 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase/config";
 import { useDispatch } from "react-redux";
-import { loginUser } from "../../store/user/action";
+import { loginUser } from "../../store/user/UserAction";
 
 const Login = (props) => {
   const [error, setError] = useState({});

@@ -8,6 +8,7 @@ import Register from "../pages/register";
 import AboutUs from "../pages/aboutUs/AboutUs";
 import BlogDetails from "../pages/blogDetails/BlogDetails";
 import BlogCard from "../Components/BlogCard";
+import Users from "../pages/users";
 
 const Router = [
   {
@@ -19,6 +20,7 @@ const Router = [
       { path: "/Blog/:id", element: <BlogDetails /> },
       { path: "/AboutUs", element: <AboutUs /> },
       { path: "/BlogCard", element: <BlogCard /> },
+      { path: "/Users", element: <Users /> },
     ],
   },
   {

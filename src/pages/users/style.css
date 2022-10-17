@@ -1,0 +1,8 @@
+.user-cards {
+  display: flex;
+  justify-content: space-between;
+}
+
+card {
+  margin-top: 50px;
+}

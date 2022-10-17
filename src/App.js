@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useRoutes } from "react-router-dom";
 import "./App.css";
 import Router from "./router";
-import { authState } from "./store/user/action";
+import { authState } from "./store/user/UserAction";
 
 const App = () => {
   const dispatch = useDispatch();

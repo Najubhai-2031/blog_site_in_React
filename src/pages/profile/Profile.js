@@ -3,6 +3,7 @@ import { HiOutlineMail } from "react-icons/hi";
 import { MdAlternateEmail } from "react-icons/md";
 import profile from "../../Images/profile.png";
 import Card from "react-bootstrap/Card";
+import "./style.css";
 import { useNavigate, useParams } from "react-router";
 import { Button, Container, Modal } from "react-bootstrap";
 import {
@@ -40,7 +41,7 @@ const Profile = (props) => {
       }
     });
   };
-  
+
   const getUserData = async () => {
     const docRef = doc(db, "users", uid);
     const docSnap = await getDoc(docRef);
