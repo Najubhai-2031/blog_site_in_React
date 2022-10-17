@@ -19,16 +19,28 @@ import {
 import { db } from "../../firebase/config";
 import Comments from "../../Components/Comments";
 import BlogCard from "../../Components/BlogCard";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const Profile = (props) => {
   const { uid } = useParams();
   const [data, setData] = useState([]);
   const [user, setUser] = useState("");
+  const [uId, setUId] = useState("");
   const [isLading, setIsLoading] = useState(false);
   const [modalShow, setModalShow] = useState(false);
   const [commentId, setCommentId] = useState(null);
   const navigate = useNavigate("");
 
+  const getCurruntUser = () => {
+    const auth = getAuth();
+    onAuthStateChanged(auth, (user) => {
+      if (user !== null) {
+        setUId(user.uid);
+      } else {
+      }
+    });
+  };
+  
   const getUserData = async () => {
     const docRef = doc(db, "users", uid);
     const docSnap = await getDoc(docRef);
@@ -103,19 +115,19 @@ const Profile = (props) => {
     navigate(`/Blog/${id}`);
   };
 
-  const handleLike = async (uid, id) => {
+  const handleLike = async (id) => {
     const docRef = doc(db, "Blog", id);
     const docSnap = await getDoc(docRef);
     const currentLikes = docSnap.data()?.likes;
 
-    if (!currentLikes.includes(uid)) {
+    if (!currentLikes.includes(uId)) {
       updateDoc(docRef, {
-        likes: [...currentLikes, uid],
+        likes: [...currentLikes, uId],
       })
         .then((res) => {})
         .catch((err) => {});
     } else {
-      const removedLikes = currentLikes.filter((item) => item !== uid);
+      const removedLikes = currentLikes.filter((item) => item !== uId);
       updateDoc(docRef, {
         likes: [...removedLikes],
       })
@@ -128,6 +140,7 @@ const Profile = (props) => {
   useEffect(() => {
     getAllData();
     getUserData();
+    getCurruntUser();
   }, [uid]);
 
   if (!isLading) {
@@ -204,12 +217,12 @@ const Profile = (props) => {
                             views={item?.views}
                             date={date?.toLocaleString()}
                             id={item?.id}
-                            handleLike={() => handleLike(uid, item?.id)}
+                            handleLike={() => handleLike(item?.id)}
                             handleNavigate={() => handleNavigate(item?.id)}
                             handleOpenComments={() =>
                               handleOpenComments(item?.id)
                             }
-                            liked={item?.likes?.includes(uid)}
+                            liked={item?.likes?.includes(uId)}
                             commentsLength={item?.comments?.length}
                             likes={item?.likes?.length}
                             showEditDeleteButton={false}
