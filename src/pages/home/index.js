@@ -11,16 +11,11 @@ import "./style.css";
 import BlogCard from "../../Components/BlogCard";
 import Comments from "../../Components/Comments";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  addBlogs,
-  getBlogList,
-  likeBlogs,
-} from "../../store/blogs/BlogsAction";
+import { addBlogs, getBlogList } from "../../store/blogs/BlogsAction";
 
 const Home = () => {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
-  const [uId, setUId] = useState("");
   const [modalShow, setModalShow] = useState(false);
   const [commentId, setCommentId] = useState(null);
   const dispatch = useDispatch();
@@ -43,8 +38,27 @@ const Home = () => {
     dispatch(addBlogs({ title, desc, userId }));
   };
 
-  const handleLike = (id) => {
-    dispatch(likeBlogs({ id, userId }));
+  const handleLike = async (id) => {
+    const docRef = doc(db, "Blog", id);
+    const docSnap = await getDoc(docRef);
+    const currentLikes = docSnap.data()?.likes;
+
+    if (!currentLikes.includes(userId)) {
+      updateDoc(docRef, {
+        likes: [...currentLikes, userId],
+      })
+        .then((res) => {})
+        .catch((err) => {});
+      getBlogs();
+    } else {
+      const removedLikes = currentLikes.filter((item) => item !== userId);
+      updateDoc(docRef, {
+        likes: [...removedLikes],
+      })
+        .then((res) => {})
+        .catch((err) => {});
+      getBlogs();
+    }
   };
 
   useEffect(() => {
