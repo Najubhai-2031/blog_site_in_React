@@ -13,11 +13,6 @@ const blogReducer = (state = initalState, action) => {
       };
     case "ADD_BLOG":
       return { ...state, blogs: [...state.blogs, ...action?.payload] };
-    case "LIKE_BLOG":
-      return {
-        ...state,
-        blogs: [...state.blogs, ...action?.payload],
-      };
     default:
       return state;
   }
