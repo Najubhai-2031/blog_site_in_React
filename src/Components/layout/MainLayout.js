@@ -4,10 +4,11 @@ import { Navigate, Outlet } from "react-router";
 import Header from "../Header";
 
 const MainLayout = () => {
-  const user = useSelector((state) => state?.user);
+  const user = useSelector((state) => state?.user?.user);
+
   return (
     <div>
-      {user ? (
+      {user !== null ? (
         <>
           <Header />
           <Outlet />
