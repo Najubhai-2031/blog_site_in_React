@@ -19,6 +19,7 @@ import { toast, ToastContainer } from "react-toastify";
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
   const [editMode, setEditMode] = useState(false);
+  const [idd, setIdd] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
 
@@ -36,8 +37,15 @@ const Dashboard = () => {
     getAllUsers();
   };
 
-  const handleUpdatedData = async (id) => {
-    const sfDocRef = doc(db, "users", id);
+  const handleEditUserData = async (name, email, id) => {
+    setEditMode(true);
+    setIdd(id);
+    setName(name);
+    setEmail(email);
+  };
+
+  const handleUpdateUserData = async () => {
+    const sfDocRef = doc(db, "users", idd);
     try {
       await runTransaction(db, async (transaction) => {
         const sfDoc = await transaction.get(sfDocRef);
@@ -51,20 +59,12 @@ const Dashboard = () => {
           email: newEmail,
         });
       });
+      toast.success("User Info Updated Successefully");
+      setEditMode(false);
       getAllUsers();
     } catch (e) {
       toast.error("Transaction failed: ", e);
     }
-  };
-
-  const handleUpdateData = () => {
-    toast.success("User Info Updated Successefully");
-    setEditMode(false);
-  };
-
-  const getDataForUpdate = async (name, email) => {
-    setName(name);
-    setEmail(email);
   };
 
   useEffect(() => {
@@ -133,12 +133,7 @@ const Dashboard = () => {
                             }}
                           />
                         </div>
-                        <div
-                          onClick={() => {
-                            getDataForUpdate(item?.displayName, item?.email);
-                            handleUpdatedData(item?.id);
-                          }}
-                        >
+                        <div>
                           <span
                             style={{
                               fontSize: "25px",
@@ -147,10 +142,18 @@ const Dashboard = () => {
                             }}
                           >
                             {!editMode ? (
-                              <FiEdit onClick={() => setEditMode(true)} />
+                              <FiEdit
+                                onClick={() =>
+                                  handleEditUserData(
+                                    item?.displayName,
+                                    item?.email,
+                                    item?.id
+                                  )
+                                }
+                              />
                             ) : (
                               <BsCheckCircleFill
-                                onClick={() => handleUpdateData()}
+                                onClick={() => handleUpdateUserData()}
                               />
                             )}
                           </span>

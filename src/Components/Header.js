@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Container from "react-bootstrap/esm/Container";
 import { CgProfile } from "react-icons/cg";
 import { FiLogOut } from "react-icons/fi";
@@ -9,31 +9,11 @@ import { Button, Nav } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../store/user/UserAction";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebase/config";
 
 const Header = () => {
-  const [user, setUser] = useState([]);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
-  const userId = useSelector((state) => state?.user?.user?.uid);
-
-  const getCurrentUserInfo = async () => {
-    const docRef = doc(db, "users", userId);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      setUser(docSnap.data());
-    } else {
-      // doc.data() will be undefined in this case
-      setUser({ displayName: "No such document!" });
-    }
-  };
-
-  useEffect(() => {
-    getCurrentUserInfo();
-  }, []);
+  const user = useSelector((state) => state?.user?.user);
 
   return (
     <React.Fragment>
@@ -69,7 +49,7 @@ const Header = () => {
               <Dropdown.Menu>
                 <Dropdown.Item
                   href="#"
-                  onClick={() => navigate(`/Profile/${userId}`)}
+                  onClick={() => navigate(`/Profile/${user?.uid}`)}
                 >
                   <CgProfile /> My Profile
                 </Dropdown.Item>

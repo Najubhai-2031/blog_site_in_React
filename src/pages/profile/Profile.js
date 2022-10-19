@@ -29,9 +29,8 @@ const Profile = (props) => {
   const [isLading, setIsLoading] = useState(false);
   const [modalShow, setModalShow] = useState(false);
   const [commentId, setCommentId] = useState(null);
-  const navigate = useNavigate("");
 
-  const userId = useSelector((state) => state?.user?.user?.uid);
+  const users = useSelector((state) => state?.user?.user);
 
   const getUserData = async () => {
     const docRef = doc(db, "users", uid);
@@ -93,40 +92,6 @@ const Profile = (props) => {
   const handleOpenComments = (id) => {
     setModalShow(true);
     setCommentId(id);
-  };
-
-  const handleNavigate = async (id) => {
-    const docRef = doc(db, "Blog", id);
-    const docSnap = await getDoc(docRef);
-    const currentView = docSnap.data()?.views;
-    updateDoc(docRef, {
-      views: currentView + 1,
-    })
-      .then((res) => {})
-      .catch((err) => {});
-    navigate(`/Blog/${id}`);
-  };
-
-  const handleLike = async (id) => {
-    const docRef = doc(db, "Blog", id);
-    const docSnap = await getDoc(docRef);
-    const currentLikes = docSnap.data()?.likes;
-
-    if (!currentLikes.includes(userId)) {
-      updateDoc(docRef, {
-        likes: [...currentLikes, userId],
-      })
-        .then((res) => {})
-        .catch((err) => {});
-    } else {
-      const removedLikes = currentLikes.filter((item) => item !== userId);
-      updateDoc(docRef, {
-        likes: [...removedLikes],
-      })
-        .then((res) => {})
-        .catch((err) => {});
-    }
-    getAllData();
   };
 
   useEffect(() => {
@@ -210,12 +175,11 @@ const Profile = (props) => {
                             views={item?.views}
                             date={date?.toLocaleString()}
                             id={item?.id}
-                            handleLike={() => handleLike(item?.id)}
-                            handleNavigate={() => handleNavigate(item?.id)}
+                            // handleLike={() => handleLike(item?.id)}
                             handleOpenComments={() =>
                               handleOpenComments(item?.id)
                             }
-                            liked={item?.likes?.includes(userId)}
+                            liked={item?.likes?.includes(users?.uid)}
                             commentsLength={item?.comments?.length}
                             likes={item?.likes?.length}
                             showEditDeleteButton={false}

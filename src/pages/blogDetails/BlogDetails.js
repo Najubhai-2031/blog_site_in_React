@@ -19,29 +19,23 @@ import Form from "react-bootstrap/Form";
 import { toast, ToastContainer } from "react-toastify";
 import { Container, Modal } from "react-bootstrap";
 import "./style.css";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 import Comments from "../../Components/Comments";
 import BlogCard from "../../Components/BlogCard";
+import { useSelector } from "react-redux";
 
 const BlogDetails = () => {
+  const user = useSelector((state) => state?.user?.user);
   const { id } = useParams();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
-  const [uid, setUid] = useState("");
   const [desc, setDesc] = useState("");
   const [show, setShow] = useState(false);
   const [isLading, setIsLoading] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  console.log("editMode", editMode);
   const [data, setData] = useState([]);
 
   const getBlogDetail = async () => {
-    const auth = getAuth();
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUid(user?.uid);
-      } else {
-      }
-    });
-
     const querySnapshot = collection(db, "Blog");
     const data = await getDocs(
       query(querySnapshot, orderBy("timeStamp"), where("id", "==", id))
@@ -83,15 +77,14 @@ const BlogDetails = () => {
   };
 
   const handleGetDataforEdit = (Title, Description) => {
+    setEditMode(true);
     setTitle(Title);
     setDesc(Description);
-    document.getElementById("frm").style.display = "block";
   };
 
   const handleEditedAddData = async (event) => {
     event.preventDefault();
     const sfDocRef = doc(db, "Blog", id);
-    document.getElementById("frm").style.display = "none";
     try {
       await runTransaction(db, async (transaction) => {
         const sfDoc = await transaction.get(sfDocRef);
@@ -106,18 +99,11 @@ const BlogDetails = () => {
         });
       });
       toast.success("Blog Updated Successefully");
-      setTitle("");
-      setDesc("");
+      setEditMode(false);
       getBlogDetail();
     } catch (e) {
       toast.error("Transaction failed: ", e);
     }
-  };
-
-  const handleUpdateDataCancle = (event) => {
-    event.preventDefault();
-    document.getElementById("frm").style.display = "none";
-    getBlogDetail();
   };
 
   const handleDeleteBlog = async () => {
@@ -130,28 +116,6 @@ const BlogDetails = () => {
     navigate("/");
   };
 
-  const handleLike = async (uid) => {
-    const docRef = doc(db, "Blog", id);
-    const docSnap = await getDoc(docRef);
-    const currentLikes = docSnap.data()?.likes;
-
-    if (!currentLikes.includes(uid)) {
-      updateDoc(docRef, {
-        likes: [...currentLikes, uid],
-      })
-        .then((res) => {})
-        .catch((err) => {});
-    } else {
-      const removedLikes = currentLikes.filter((item) => item !== uid);
-      updateDoc(docRef, {
-        likes: [...removedLikes],
-      })
-        .then((res) => {})
-        .catch((err) => {});
-    }
-    getBlogDetail();
-  };
-
   useEffect(() => {
     getBlogDetail();
   }, [id]);
@@ -159,49 +123,53 @@ const BlogDetails = () => {
   return (
     <React.Fragment>
       <ToastContainer />
-      <div id="frm">
-        <div className="main">
-          <Form>
-            <Form.Group className="mb-3" controlId="formBasicTitle">
-              <Form.Control
-                type="text"
-                placeholder="Title *"
-                onChange={(e) => setTitle(e.target.value)}
-                value={title}
-              />
-            </Form.Group>
+      <Container>
+        {editMode ? (
+          <div>
+            <div className="main">
+              <Form>
+                <Form.Group className="mb-3" controlId="formBasicTitle">
+                  <Form.Control
+                    type="text"
+                    placeholder="Title *"
+                    onChange={(e) => setTitle(e.target.value)}
+                    value={title}
+                  />
+                </Form.Group>
 
-            <Form.Group className="mb-3" controlId="formBasicDescription">
-              <Form.Control
-                type="text"
-                rows={3}
-                value={desc}
-                onChange={(e) => setDesc(e.target.value)}
-                placeholder="Description *"
-                as="textarea"
-              />
-            </Form.Group>
-            <div className="gap-2 text-center">
-              <Button
-                variant="primary"
-                type="button"
-                onClick={handleEditedAddData}
-                className="update-btn me-2"
-              >
-                Update
-              </Button>
-              <Button
-                variant="primary"
-                type="button"
-                onClick={handleUpdateDataCancle}
-                className="update-btn"
-              >
-                Cancel
-              </Button>
+                <Form.Group className="mb-3" controlId="formBasicDescription">
+                  <Form.Control
+                    type="text"
+                    rows={3}
+                    value={desc}
+                    onChange={(e) => setDesc(e.target.value)}
+                    placeholder="Description *"
+                    as="textarea"
+                  />
+                </Form.Group>
+                <div className="gap-2 text-center">
+                  <Button
+                    variant="primary"
+                    type="button"
+                    onClick={handleEditedAddData}
+                    className="update-btn me-2"
+                  >
+                    Update
+                  </Button>
+                  <Button
+                    variant="primary"
+                    type="button"
+                    onClick={() => setEditMode(false)}
+                    className="update-btn"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </Form>
             </div>
-          </Form>
-        </div>
-      </div>
+          </div>
+        ) : null}
+      </Container>
       <div className="cards">
         <div className="cards-inner">
           {!isLading ? (
@@ -225,8 +193,7 @@ const BlogDetails = () => {
                       views={item?.views}
                       date={date?.toLocaleString()}
                       id={item?.id}
-                      handleLike={() => handleLike(uid)}
-                      liked={item?.likes?.includes(uid)}
+                      liked={item?.likes?.includes(user?.uid)}
                       commentsLength={item?.comments?.length}
                       likes={item?.likes?.length}
                       showContinueButton={false}
@@ -243,6 +210,7 @@ const BlogDetails = () => {
           )}
         </div>
       </div>
+
       <Comments id={id} getAllData={getBlogDetail} />
 
       <React.Fragment>

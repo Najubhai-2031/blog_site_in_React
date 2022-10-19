@@ -1,11 +1,9 @@
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {
   addDoc,
   collection,
   deleteDoc,
   doc,
   documentId,
-  getDoc,
   getDocs,
   orderBy,
   query,
@@ -21,8 +19,7 @@ import { toast, ToastContainer } from "react-toastify";
 import { db } from "../firebase/config";
 
 const Comments = (props) => {
-  const [user, setUser] = useState("");
-  const userUid = useSelector((state) => state?.user?.user.uid);
+  const user = useSelector((state) => state?.user?.user);
   const [comment, setComment] = useState("");
   const [isLading, setIsLoading] = useState(true);
   const [comments, setCommments] = useState([]);
@@ -36,7 +33,7 @@ const Comments = (props) => {
       addDoc(collection(db, "Comments"), {
         comment: comment,
         timeStamp: Date.now(),
-        uId: userUid,
+        uId: user?.uid,
         blogId: props?.id,
       }).then((docResponse) => {
         const docRef = doc(db, "Comments", docResponse?.id);
@@ -51,17 +48,6 @@ const Comments = (props) => {
       });
       toast.success("Comment Submited Successfully");
       setComment("");
-    }
-  };
-
-  const getCurrentUserInfo = async () => {
-    const docRef = doc(db, "users", userUid);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      setUser(docSnap.data());
-    } else {
-      setUser("User Not Found!");
     }
   };
 
@@ -123,9 +109,9 @@ const Comments = (props) => {
   };
 
   useEffect(() => {
-    getCurrentUserInfo();
     getComments();
   }, []);
+
   return (
     <React.Fragment>
       <ToastContainer />
@@ -139,7 +125,7 @@ const Comments = (props) => {
             <div className="comment-inner">
               <div
                 className="name-show"
-                onClick={() => navigate(`/Profile/${userUid}`)}
+                onClick={() => navigate(`/Profile/${user?.uid}`)}
               >
                 <span> {user?.displayName}</span>
               </div>
@@ -211,7 +197,7 @@ const Comments = (props) => {
                           <p>{item?.comment}</p>
                         </div>
                       </div>
-                      {userUid === item?.uId ? (
+                      {user?.uid === item?.uId ? (
                         <div className="delete-comment">
                           <AiFillDelete
                             onClick={() => handleDeleteComments(item?.id)}

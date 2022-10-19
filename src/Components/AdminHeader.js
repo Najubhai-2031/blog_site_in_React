@@ -1,32 +1,14 @@
-import { doc, getDoc } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Container, Dropdown, Nav, Navbar } from "react-bootstrap";
 import { CgProfile } from "react-icons/cg";
 import { FiLogOut } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
-import { db } from "../firebase/config";
 import { logout } from "../store/user/UserAction";
 
 const AdminHeader = () => {
-  const [user, setUser] = useState("");
-  const userUid = useSelector((state) => state?.user?.user.uid);
-
-  const getCurrentUserInfo = async () => {
-    const docRef = doc(db, "users", userUid);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      setUser(docSnap.data());
-    } else {
-      setUser("User Not Found!");
-    }
-  };
-
-  useEffect(() => {
-    getCurrentUserInfo();
-  }, []);
-
+  const user = useSelector((state) => state?.user?.user);
   const dispatch = useDispatch();
+
   return (
     <React.Fragment>
       <Navbar bg="light" expand="lg">
@@ -47,7 +29,7 @@ const AdminHeader = () => {
               <Dropdown.Menu>
                 <Dropdown.Item
                   href="#"
-                  // onClick={() => navigate(`/Profile/${userUid}`)}
+                  // onClick={() => navigate(`/Profile/${user?.uid}`)}
                 >
                   <CgProfile /> My Profile
                 </Dropdown.Item>

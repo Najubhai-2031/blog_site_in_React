@@ -30,8 +30,7 @@ const Home = () => {
   const [modalShow, setModalShow] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [commentId, setCommentId] = useState(null);
-  const userId = useSelector((uid) => uid?.user?.user?.uid);
-  const navigate = useNavigate();
+  const user = useSelector((uid) => uid?.user?.user);
 
   const getBlogs = async () => {
     const querySnapshot = collection(db, "Blog");
@@ -87,7 +86,7 @@ const Home = () => {
           title: title,
           description: desc,
           timeStamp: Date.now(),
-          uid: userId,
+          uid: user?.uid,
         }).then((docResponse) => {
           const docRef = doc(db, "Blog", docResponse?.id);
           updateDoc(docRef, {
@@ -109,44 +108,9 @@ const Home = () => {
     }
   };
 
-  const handleLike = async (id) => {
-    const docRef = doc(db, "Blog", id);
-    const docSnap = await getDoc(docRef);
-    const currentLikes = docSnap.data()?.likes;
-
-    if (!currentLikes.includes(userId)) {
-      updateDoc(docRef, {
-        likes: [...currentLikes, userId],
-      })
-        .then((res) => {})
-        .catch((err) => {});
-      getBlogs();
-    } else {
-      const removedLikes = currentLikes.filter((item) => item !== userId);
-      updateDoc(docRef, {
-        likes: [...removedLikes],
-      })
-        .then((res) => {})
-        .catch((err) => {});
-      getBlogs();
-    }
-  };
-
   useEffect(() => {
     getBlogs();
   }, []);
-
-  const handleNavigate = async (id) => {
-    const docRef = doc(db, "Blog", id);
-    const docSnap = await getDoc(docRef);
-    const currentView = docSnap.data()?.views;
-    updateDoc(docRef, {
-      views: currentView + 1,
-    })
-      .then((res) => {})
-      .catch((err) => {});
-    navigate(`/Blog/${id}`);
-  };
 
   return (
     <React.Fragment>
@@ -212,13 +176,12 @@ const Home = () => {
                     views={item?.views}
                     date={date.toLocaleString()}
                     id={item?.id}
-                    liked={item?.likes?.includes(userId)}
+                    liked={item?.likes?.includes(user?.uid)}
                     likes={item?.likes?.length}
-                    handleLike={() => handleLike(item?.id)}
-                    handleNavigate={() => handleNavigate(item?.id)}
                     commentsLength={item?.comments?.length}
                     showEditDeleteButton={false}
                     handleOpenComments={() => handleOpenComments(item?.id)}
+                    getAllData={getBlogs}
                   />
                 </div>
               );
