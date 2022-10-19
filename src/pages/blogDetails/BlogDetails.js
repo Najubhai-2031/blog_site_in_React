@@ -217,6 +217,7 @@ const BlogDetails = () => {
                 return (
                   <div className="card-with-three-dot" key={item?.id}>
                     <BlogCard
+                      width={"77vw"}
                       title={item?.title}
                       name={item?.displayName}
                       description={item?.description}

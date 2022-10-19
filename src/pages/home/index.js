@@ -1,31 +1,75 @@
-import { updateDoc, doc, getDoc } from "firebase/firestore";
+import {
+  updateDoc,
+  doc,
+  getDoc,
+  getDocs,
+  collection,
+  query,
+  orderBy,
+  where,
+  documentId,
+  addDoc,
+} from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { Container, Modal } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { useNavigate } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { db } from "../../firebase/config";
-import "./style.css";
+import "./homestyle.css";
 import BlogCard from "../../Components/BlogCard";
 import Comments from "../../Components/Comments";
-import { useDispatch, useSelector } from "react-redux";
-import { addBlogs, getBlogList } from "../../store/blogs/BlogsAction";
+import { useSelector } from "react-redux";
 
 const Home = () => {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
+  const [data, setData] = useState([]);
   const [modalShow, setModalShow] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [commentId, setCommentId] = useState(null);
-  const dispatch = useDispatch();
-
-  const blogList = useSelector((blogsList) => blogsList?.blog.blogs);
   const userId = useSelector((uid) => uid?.user?.user?.uid);
   const navigate = useNavigate();
 
-  const getBlogs = () => {
-    dispatch(getBlogList());
+  const getBlogs = async () => {
+    const querySnapshot = collection(db, "Blog");
+    const data = await getDocs(query(querySnapshot, orderBy("timeStamp")));
+
+    const blogsUser = data.docs.map((blog) => {
+      return blog.data()?.uid;
+    });
+
+    const getBlogId = data.docs.map((blogId) => {
+      return blogId.data()?.id;
+    });
+
+    const comments = await getDocs(
+      query(collection(db, "Comments"), where("blogId", "in", getBlogId))
+    );
+
+    const blogComments = comments.docs.map((comment) => comment.data());
+
+    const users = await getDocs(
+      query(collection(db, "users"), where(documentId(), "in", blogsUser))
+    );
+
+    const blogUsers = users.docs.map((user) => user.data());
+
+    const commentsData = data.docs
+      .map((blog) => {
+        const findUser = blogUsers.find(
+          (user) => blog?.data()?.uid === user.id
+        );
+        const findComment = blogComments.filter(
+          (comment) => comment.blogId === blog.data().id
+        );
+        return { ...findUser, comments: findComment, ...blog.data() };
+      })
+      .sort((a, b) => b.timeStamp - a.timeStamp);
+    setIsLoading(true);
+    setData(commentsData);
   };
 
   const handleOpenComments = (id) => {
@@ -35,7 +79,34 @@ const Home = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    dispatch(addBlogs({ title, desc, userId }));
+    if (title === "" || desc === "") {
+      alert("Please Fill The Details");
+    } else {
+      setTimeout(() => {
+        addDoc(collection(db, "Blog"), {
+          title: title,
+          description: desc,
+          timeStamp: Date.now(),
+          uid: userId,
+        }).then((docResponse) => {
+          const docRef = doc(db, "Blog", docResponse?.id);
+          updateDoc(docRef, {
+            id: docResponse?.id,
+            views: 0,
+            likes: [],
+          })
+            .then(() => {
+              getBlogs();
+            })
+            .catch((err) => {
+              toast.error(err);
+            });
+        });
+        setTitle("");
+        setDesc("");
+        toast.success("Blog Added Successfully");
+      }, 500);
+    }
   };
 
   const handleLike = async (id) => {
@@ -115,19 +186,28 @@ const Home = () => {
           </Form>
         </div>
         {/* Map Method for data Showing */}
-        {blogList?.blog?.isLoading ? (
+        {!isLoading ? (
           <div className="text-center">Loading...</div>
         ) : (
           <Container className="cards">
-            {blogList.map((item) => {
+            {data.map((item) => {
               var date = new Date(item.timeStamp);
               var title = item?.title;
               return (
                 <div className="cards-inner" key={item?.id}>
                   <BlogCard
-                    title={`${title.slice(0, 25)}...`}
+                    width={"25vw"}
+                    title={
+                      item?.title?.length >= 30
+                        ? `${title.slice(0, 30)}...`
+                        : item?.title
+                    }
                     name={item.displayName}
-                    description={`${item.description.slice(0, 150)}...`}
+                    description={
+                      item?.description?.length >= 150
+                        ? `${item.description.slice(0, 200)}...`
+                        : item?.description
+                    }
                     uid={item?.uid}
                     views={item?.views}
                     date={date.toLocaleString()}

@@ -208,12 +208,14 @@ const Profile = (props) => {
                       <div className="cards-inner" key={item?.id}>
                         <div className="cards-inner">
                           <BlogCard
+                            width={"75vw"}
                             title={item?.title}
                             name={item?.displayName}
-                            description={`${item?.description?.slice(
-                              0,
-                              550
-                            )}...`}
+                            description={
+                              item?.description?.length >= 150
+                                ? `${item.description.slice(0, 680)}...`
+                                : item?.description
+                            }
                             uid={item?.uid}
                             views={item?.views}
                             date={date?.toLocaleString()}
