@@ -127,7 +127,7 @@ const Comments = (props) => {
                 className="name-show"
                 onClick={() => navigate(`/Profile/${user?.uid}`)}
               >
-                <span> {user?.displayName}</span>
+                <span onClick={props?.modalShoww}> {user?.displayName}</span>
               </div>
               <div className="write-comment">
                 <Form.Group className="mb-3" controlId="formBasicDescription">
@@ -180,7 +180,9 @@ const Comments = (props) => {
                           className="name-and-date"
                           onClick={() => navigate(`/Profile/${item?.uId}`)}
                         >
-                          <span>{item?.displayName}</span>
+                          <span onClick={props?.modalShoww}>
+                            {item?.displayName}
+                          </span>
                         </div>
                         <div
                           className="commented-on"

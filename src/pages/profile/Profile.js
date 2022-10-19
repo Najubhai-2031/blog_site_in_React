@@ -4,7 +4,7 @@ import { MdAlternateEmail } from "react-icons/md";
 import profile from "../../Images/profile.png";
 import Card from "react-bootstrap/Card";
 import "./style.css";
-import { useNavigate, useParams } from "react-router";
+import { useParams } from "react-router";
 import { Button, Container, Modal } from "react-bootstrap";
 import {
   collection,
@@ -14,7 +14,6 @@ import {
   getDocs,
   orderBy,
   query,
-  updateDoc,
   where,
 } from "firebase/firestore";
 import { db } from "../../firebase/config";
@@ -208,7 +207,11 @@ const Profile = (props) => {
           aria-labelledby="contained-modal-title-vcenter"
           centered
         >
-          <Comments id={commentId} getAllData={getAllData} />
+          <Comments
+            id={commentId}
+            modalShoww={() => setModalShow(false)}
+            getAllData={getAllData}
+          />
           <Modal.Footer>
             <Button show={modalShow} onClick={() => setModalShow(false)}>
               Close

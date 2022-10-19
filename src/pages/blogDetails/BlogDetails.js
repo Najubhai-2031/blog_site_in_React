@@ -32,7 +32,6 @@ const BlogDetails = () => {
   const [show, setShow] = useState(false);
   const [isLading, setIsLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  console.log("editMode", editMode);
   const [data, setData] = useState([]);
 
   const getBlogDetail = async () => {
