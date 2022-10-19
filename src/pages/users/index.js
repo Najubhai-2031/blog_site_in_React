@@ -1,11 +1,11 @@
 import { collection, getDocs, query, where } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button, Card, Container, Form } from "react-bootstrap";
 import "./style.css";
 import { db } from "../../firebase/config";
 
 const Users = () => {
-  const [userss, setUsers] = useState("");
+  const [userss, setUserss] = useState("");
 
   const getUsersByName = async (search) => {
     const q = query(
@@ -15,7 +15,7 @@ const Users = () => {
 
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
-      setUsers(doc.data());
+      setUserss(doc.data());
     });
   };
 
