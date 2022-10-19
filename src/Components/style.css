@@ -175,7 +175,10 @@
   border: 0px;
 }
 
-.description-div,
+.description-div {
+  height: 20vh !important;
+}
+
 .title-div,
 .profile-div,
 .like-comment-view-div,

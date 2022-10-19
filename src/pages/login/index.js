@@ -3,12 +3,10 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { useNavigate } from "react-router";
 import "./style.css";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebase/config";
 import { useDispatch } from "react-redux";
-import { loginUser } from "../../store/user/action";
+import { loginUser } from "../../store/user/UserAction";
 
 const Login = (props) => {
   const [error, setError] = useState({});

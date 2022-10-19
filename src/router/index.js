@@ -8,6 +8,9 @@ import Register from "../pages/register";
 import AboutUs from "../pages/aboutUs/AboutUs";
 import BlogDetails from "../pages/blogDetails/BlogDetails";
 import BlogCard from "../Components/BlogCard";
+import Users from "../pages/users";
+import Admin from "../Components/layout/Admin";
+import Dashboard from "../pages/Dashboard";
 
 const Router = [
   {
@@ -19,6 +22,7 @@ const Router = [
       { path: "/Blog/:id", element: <BlogDetails /> },
       { path: "/AboutUs", element: <AboutUs /> },
       { path: "/BlogCard", element: <BlogCard /> },
+      { path: "/Users", element: <Users /> },
     ],
   },
   {
@@ -29,6 +33,11 @@ const Router = [
       { path: "register", element: <Register /> },
       { path: "forgotepassword", element: <ForgotPass /> },
     ],
+  },
+  {
+    path: "admin",
+    element: <Admin />,
+    children: [{ path: "dashboard", element: <Dashboard /> }],
   },
 ];
 

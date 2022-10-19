@@ -1,6 +1,6 @@
 import React from "react";
 import "./style.css";
-import { Card, Dropdown } from "react-bootstrap";
+import { Card, Container, Dropdown } from "react-bootstrap";
 import { ArrowRight } from "react-bootstrap-icons";
 import { AiFillDelete, AiFillLike, AiOutlineEye } from "react-icons/ai";
 import { FaComment, FaPenNib } from "react-icons/fa";
@@ -16,7 +16,7 @@ const BlogCard = (props) => {
     <React.Fragment>
       <Card style={{ marginTop: "-20px" }}>
         <Card.Body>
-          <div>
+          <div style={{ width: `${props?.width}` }}>
             <div className="card-and-three-dot">
               <div>
                 <div className="content-div title-div">
@@ -30,12 +30,18 @@ const BlogCard = (props) => {
                     </b>
                   </Card.Text>
                 </div>
-                <div className="content-div description-div">
+                <div
+                  className="content-div description-div"
+                  style={{ width: `${props?.width}` }}
+                >
                   <Card.Text id="sort-description">
                     {props?.description}
                   </Card.Text>
                 </div>
-                <div className="content-div like-comment-view-div">
+                <div
+                  className="content-div like-comment-view-div"
+                  style={{ width: `${props?.width}` }}
+                >
                   <div>
                     <AiOutlineEye style={{ marginLeft: "5px" }} />
                     {props?.views}
@@ -55,7 +61,10 @@ const BlogCard = (props) => {
                     {props?.likes}
                   </div>
                 </div>
-                <div className="content-div readmore-div">
+                <div
+                  className="content-div readmore-div "
+                  style={{ width: `${props?.width}` }}
+                >
                   <div className="last-text">
                     <Card.Text>{props?.date}</Card.Text>
                   </div>

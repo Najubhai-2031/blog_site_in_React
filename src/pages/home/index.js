@@ -1,49 +1,39 @@
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {
-  addDoc,
-  collection,
-  getDocs,
-  orderBy,
-  query,
   updateDoc,
   doc,
   getDoc,
+  getDocs,
+  collection,
+  query,
+  orderBy,
   where,
   documentId,
+  addDoc,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { Container, Modal } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { db } from "../../firebase/config";
-import "./style.css";
+import "./homestyle.css";
 import BlogCard from "../../Components/BlogCard";
 import Comments from "../../Components/Comments";
+import { useSelector } from "react-redux";
 
 const Home = () => {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
-  const [uId, setUId] = useState("");
-  const [view] = useState(0);
-  const [like] = useState([]);
+  const [data, setData] = useState([]);
   const [modalShow, setModalShow] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [commentId, setCommentId] = useState(null);
-  const [data, setData] = useState([]);
-
+  const userId = useSelector((uid) => uid?.user?.user?.uid);
   const navigate = useNavigate();
 
   const getBlogs = async () => {
-    const auth = getAuth();
-    onAuthStateChanged(auth, (user) => {
-      if (user !== null) {
-        setUId(user.uid);
-      } else {
-      }
-    });
     const querySnapshot = collection(db, "Blog");
     const data = await getDocs(query(querySnapshot, orderBy("timeStamp")));
 
@@ -97,13 +87,13 @@ const Home = () => {
           title: title,
           description: desc,
           timeStamp: Date.now(),
-          uid: uId,
+          uid: userId,
         }).then((docResponse) => {
           const docRef = doc(db, "Blog", docResponse?.id);
           updateDoc(docRef, {
             id: docResponse?.id,
-            views: view,
-            likes: like,
+            views: 0,
+            likes: [],
           })
             .then(() => {
               getBlogs();
@@ -119,20 +109,20 @@ const Home = () => {
     }
   };
 
-  const handleLike = async (uid, id) => {
+  const handleLike = async (id) => {
     const docRef = doc(db, "Blog", id);
     const docSnap = await getDoc(docRef);
     const currentLikes = docSnap.data()?.likes;
 
-    if (!currentLikes.includes(uid)) {
+    if (!currentLikes.includes(userId)) {
       updateDoc(docRef, {
-        likes: [...currentLikes, uid],
+        likes: [...currentLikes, userId],
       })
         .then((res) => {})
         .catch((err) => {});
       getBlogs();
     } else {
-      const removedLikes = currentLikes.filter((item) => item !== uid);
+      const removedLikes = currentLikes.filter((item) => item !== userId);
       updateDoc(docRef, {
         likes: [...removedLikes],
       })
@@ -206,16 +196,25 @@ const Home = () => {
               return (
                 <div className="cards-inner" key={item?.id}>
                   <BlogCard
-                    title={`${title.slice(0, 25)}...`}
+                    width={"25vw"}
+                    title={
+                      item?.title?.length >= 30
+                        ? `${title.slice(0, 30)}...`
+                        : item?.title
+                    }
                     name={item.displayName}
-                    description={`${item.description.slice(0, 150)}...`}
+                    description={
+                      item?.description?.length >= 150
+                        ? `${item.description.slice(0, 200)}...`
+                        : item?.description
+                    }
                     uid={item?.uid}
                     views={item?.views}
                     date={date.toLocaleString()}
                     id={item?.id}
-                    liked={item?.likes?.includes(uId)}
+                    liked={item?.likes?.includes(userId)}
                     likes={item?.likes?.length}
-                    handleLike={() => handleLike(uId, item?.id)}
+                    handleLike={() => handleLike(item?.id)}
                     handleNavigate={() => handleNavigate(item?.id)}
                     commentsLength={item?.comments?.length}
                     showEditDeleteButton={false}
