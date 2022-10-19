@@ -4,18 +4,20 @@ import {
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
-import { auth } from "../../firebase/config";
+import { auth, db } from "../../firebase/config";
 
 export const loginUser = ({ email, pass }) => {
   return (dispatch) => {
     signInWithEmailAndPassword(auth, email, pass)
-      .then((userCredential) => {
+      .then(async (userCredential) => {
         const user = userCredential.user;
-        toast.success("Welcome Back!");
+        const docRef = doc(db, "users", user?.uid);
+        const docSnap = await getDoc(docRef);
         dispatch({
           type: "LOGIN_USER",
-          payload: user,
+          payload: { ...user, role: docSnap?.data().role },
         });
       })
       .catch((error) => {
@@ -29,11 +31,13 @@ export const loginUser = ({ email, pass }) => {
 export const authState = () => {
   return (dispatch) => {
     const auth = getAuth();
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
+      const docRef = doc(db, "users", user?.uid);
+      const docSnap = await getDoc(docRef);
       if (user) {
         dispatch({
           type: "LOGIN_USER",
-          payload: user,
+          payload: { ...user, role: docSnap?.data().role },
         });
       }
     });
