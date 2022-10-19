@@ -5,29 +5,34 @@ import { FiLogOut } from "react-icons/fi";
 import Navbar from "react-bootstrap/esm/Navbar";
 import Dropdown from "react-bootstrap/Dropdown";
 import { useNavigate } from "react-router";
-import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
-import { auth, db } from "../firebase/config";
-import { Button, Form, Modal, Nav } from "react-bootstrap";
+import { Button, Nav } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../store/user/UserAction";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase/config";
 
-import { collection, getDocs } from "firebase/firestore";
 const Header = () => {
-  const [name, setName] = useState("");
-  const [uid, setUid] = useState("");
+  const [user, setUser] = useState([]);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  const userId = useSelector((state) => state?.user?.user?.uid);
+
+  const getCurrentUserInfo = async () => {
+    const docRef = doc(db, "users", userId);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      setUser(docSnap.data());
+    } else {
+      // doc.data() will be undefined in this case
+      setUser({ displayName: "No such document!" });
+    }
+  };
+
   useEffect(() => {
-    const auth = getAuth();
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setName(user.displayName);
-        setUid(user?.uid);
-      } else {
-      }
-    });
+    getCurrentUserInfo();
   }, []);
 
   return (
@@ -58,15 +63,15 @@ const Header = () => {
                 variant="success"
                 id="dropdown-basic"
               >
-                Hi, {name}
+                Hi, {user?.displayName}
               </Dropdown.Toggle>
 
               <Dropdown.Menu>
                 <Dropdown.Item
                   href="#"
-                  onClick={() => navigate(`/Profile/${uid}`)}
+                  onClick={() => navigate(`/Profile/${userId}`)}
                 >
-                  <CgProfile /> Profile
+                  <CgProfile /> My Profile
                 </Dropdown.Item>
                 <Dropdown.Item href="#" onClick={() => dispatch(logout())}>
                   <FiLogOut /> Logout
