@@ -39,6 +39,7 @@ const Register = (props) => {
           setDoc(doc(db, "users", response?.user?.uid), {
             email: email,
             displayName: name,
+            role: "user",
             id: response?.user?.uid,
           }).then((docResponse) => {
             console.log("docResponse", docResponse);
