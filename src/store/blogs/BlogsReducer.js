@@ -1,6 +1,5 @@
 const initalState = {
   blogs: [],
-  isLoading: true,
 };
 
 const blogReducer = (state = initalState, action) => {
@@ -12,7 +11,7 @@ const blogReducer = (state = initalState, action) => {
         isLoading: false,
       };
     case "ADD_BLOG":
-      return { ...state, blogs: [...state.blogs, ...action?.payload] };
+      return { ...state, blogs: [action?.payload, ...state.blogs] };
     default:
       return state;
   }

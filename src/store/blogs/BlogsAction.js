@@ -4,7 +4,6 @@ import {
   collection,
   doc,
   documentId,
-  getDoc,
   getDocs,
   orderBy,
   query,
@@ -29,42 +28,50 @@ export const getBlogList = () => {
       return blog.data()?.uid;
     });
 
-    const getBlogId = data.docs.map((blogId) => {
-      return blogId.data()?.id;
-    });
+    if (blogsUser?.length) {
+      const getBlogId = data.docs.map((blogId) => {
+        return blogId.data()?.id;
+      });
+      console.log("getBlogId", getBlogId);
+      const comments = await getDocs(
+        query(collection(db, "Comments"), where("blogId", "in", getBlogId))
+      );
 
-    const comments = await getDocs(
-      query(collection(db, "Comments"), where("blogId", "in", getBlogId))
-    );
+      const blogComments = comments.docs.map((comment) => comment.data());
 
-    const blogComments = comments.docs.map((comment) => comment.data());
+      const users = await getDocs(
+        query(collection(db, "users"), where(documentId(), "in", blogsUser))
+      );
 
-    const users = await getDocs(
-      query(collection(db, "users"), where(documentId(), "in", blogsUser))
-    );
+      const blogUsers = users.docs.map((user) => user.data());
 
-    const blogUsers = users.docs.map((user) => user.data());
-
-    const commentsData = data.docs
-      .map((blog) => {
-        const findUser = blogUsers.find(
-          (user) => blog?.data()?.uid === user.id
-        );
-        const findComment = blogComments.filter(
-          (comment) => comment.blogId === blog.data().id
-        );
-        return { ...findUser, comments: findComment, ...blog.data() };
-      })
-      .sort((a, b) => b.timeStamp - a.timeStamp);
-    dispatch({
-      type: "BLOG_LIST",
-      payload: commentsData,
-    });
+      const commentsData = data.docs
+        .map((blog) => {
+          const findUser = blogUsers.find(
+            (user) => blog?.data()?.uid === user.id
+          );
+          const findComment = blogComments.filter(
+            (comment) => comment.blogId === blog.data().id
+          );
+          return { ...findUser, comments: findComment, ...blog.data() };
+        })
+        .sort((a, b) => b.timeStamp - a.timeStamp);
+      dispatch({
+        type: "BLOG_LIST",
+        payload: commentsData,
+      });
+    } else {
+      dispatch({
+        type: "BLOG_LIST",
+        payload: [],
+      });
+    }
   };
 };
 
 export const addBlogs = ({ title, desc, userId }) => {
   return async (dispatch) => {
+    console.log("dispatch", dispatch);
     if (title === "" || desc === "") {
       alert("Please Fill The Details");
     } else {
@@ -89,6 +96,8 @@ export const addBlogs = ({ title, desc, userId }) => {
                 timeStamp: Date.now(),
                 uid: userId,
                 id: docResponse?.id,
+                views: 0,
+                likes: [],
               },
             });
           })
