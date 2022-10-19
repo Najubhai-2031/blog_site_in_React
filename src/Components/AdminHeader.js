@@ -8,7 +8,7 @@ import { db } from "../firebase/config";
 import { logout } from "../store/user/UserAction";
 
 const AdminHeader = () => {
-  const [user, setUser] = useState([]);
+  const [user, setUser] = useState("");
   const userUid = useSelector((state) => state?.user?.user.uid);
 
   const getCurrentUserInfo = async () => {

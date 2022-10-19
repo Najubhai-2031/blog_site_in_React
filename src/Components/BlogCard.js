@@ -1,13 +1,15 @@
 import React from "react";
 import "./style.css";
-import { Card, Container, Dropdown } from "react-bootstrap";
+import { Card, Dropdown } from "react-bootstrap";
 import { ArrowRight } from "react-bootstrap-icons";
 import { AiFillDelete, AiFillLike, AiOutlineEye } from "react-icons/ai";
 import { FaComment, FaPenNib } from "react-icons/fa";
 import { FiEdit } from "react-icons/fi";
 import { useNavigate } from "react-router";
+import { useSelector } from "react-redux";
 
 const BlogCard = (props) => {
+  const userUid = useSelector((state) => state?.user?.user?.uid);
   const { showContinueButton = true } = props;
   const { showEditDeleteButton = true } = props;
   const navigate = useNavigate("");
@@ -84,7 +86,7 @@ const BlogCard = (props) => {
               <div>
                 {showEditDeleteButton ? (
                   <div>
-                    {props?.uid === props?.uid ? (
+                    {props?.uid === userUid ? (
                       <div className="three-dot">
                         <Dropdown>
                           <Dropdown.Toggle>
