@@ -125,7 +125,7 @@ const BlogDetails = () => {
   };
 
   const handleConfirmDeleteBlog = async (Id) => {
-    toast.success("Blog Deleted Successefully");
+    toast.error("Blog Deleted Successefully");
     await deleteDoc(doc(db, "Blog", Id));
     navigate("/");
   };
