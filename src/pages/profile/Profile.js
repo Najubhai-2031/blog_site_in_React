@@ -20,27 +20,18 @@ import {
 import { db } from "../../firebase/config";
 import Comments from "../../Components/Comments";
 import BlogCard from "../../Components/BlogCard";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { useSelector } from "react-redux";
 
 const Profile = (props) => {
   const { uid } = useParams();
   const [data, setData] = useState([]);
   const [user, setUser] = useState("");
-  const [uId, setUId] = useState("");
   const [isLading, setIsLoading] = useState(false);
   const [modalShow, setModalShow] = useState(false);
   const [commentId, setCommentId] = useState(null);
   const navigate = useNavigate("");
 
-  const getCurruntUser = () => {
-    const auth = getAuth();
-    onAuthStateChanged(auth, (user) => {
-      if (user !== null) {
-        setUId(user.uid);
-      } else {
-      }
-    });
-  };
+  const userId = useSelector((state) => state?.user?.user?.uid);
 
   const getUserData = async () => {
     const docRef = doc(db, "users", uid);
@@ -121,14 +112,14 @@ const Profile = (props) => {
     const docSnap = await getDoc(docRef);
     const currentLikes = docSnap.data()?.likes;
 
-    if (!currentLikes.includes(uId)) {
+    if (!currentLikes.includes(userId)) {
       updateDoc(docRef, {
-        likes: [...currentLikes, uId],
+        likes: [...currentLikes, userId],
       })
         .then((res) => {})
         .catch((err) => {});
     } else {
-      const removedLikes = currentLikes.filter((item) => item !== uId);
+      const removedLikes = currentLikes.filter((item) => item !== userId);
       updateDoc(docRef, {
         likes: [...removedLikes],
       })
@@ -141,7 +132,6 @@ const Profile = (props) => {
   useEffect(() => {
     getAllData();
     getUserData();
-    getCurruntUser();
   }, [uid]);
 
   if (!isLading) {
@@ -225,7 +215,7 @@ const Profile = (props) => {
                             handleOpenComments={() =>
                               handleOpenComments(item?.id)
                             }
-                            liked={item?.likes?.includes(uId)}
+                            liked={item?.likes?.includes(userId)}
                             commentsLength={item?.comments?.length}
                             likes={item?.likes?.length}
                             showEditDeleteButton={false}
