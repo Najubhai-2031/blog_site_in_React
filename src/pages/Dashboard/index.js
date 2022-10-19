@@ -13,13 +13,16 @@ import { db } from "../../firebase/config";
 import { AiFillDelete } from "react-icons/ai";
 import { BsCheckCircleFill } from "react-icons/bs";
 import { FiEdit } from "react-icons/fi";
+import { MdCancel } from "react-icons/md";
 import "./style.css";
 import { toast, ToastContainer } from "react-toastify";
 
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
   const [editMode, setEditMode] = useState(false);
-  const [idd, setIdd] = useState("");
+  const [deleteMode, setDeleteMode] = useState(false);
+  const [uids, setUids] = useState([]);
+  const [id, setId] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
 
@@ -39,13 +42,13 @@ const Dashboard = () => {
 
   const handleEditUserData = async (name, email, id) => {
     setEditMode(true);
-    setIdd(id);
+    setId(id);
     setName(name);
     setEmail(email);
   };
 
   const handleUpdateUserData = async () => {
-    const sfDocRef = doc(db, "users", idd);
+    const sfDocRef = doc(db, "users", id);
     try {
       await runTransaction(db, async (transaction) => {
         const sfDoc = await transaction.get(sfDocRef);
@@ -67,6 +70,27 @@ const Dashboard = () => {
     }
   };
 
+  const multiUserDelete = () => {
+    setDeleteMode(false);
+    uids.forEach(async (singleUid) => {
+      await deleteDoc(doc(db, "users", singleUid));
+      toast.error("User Deleted Successefully");
+      getAllUsers();
+    });
+  };
+
+  const multiUserSelect = (id) => {
+    setDeleteMode(true);
+    const tempUids = [...uids];
+    if (!uids.includes(id)) {
+      tempUids.push(id);
+    } else {
+      const index = tempUids.findIndex((item) => item === id);
+      tempUids.splice(index, 1);
+    }
+    setUids(tempUids);
+  };
+
   useEffect(() => {
     getAllUsers();
   }, []);
@@ -75,9 +99,37 @@ const Dashboard = () => {
     <React.Fragment>
       <ToastContainer />
       <Container>
+        {uids.length ? (
+          <div className="text-right">
+            <span
+              style={{
+                fontSize: "25px",
+                color: "red",
+                cursor: "pointer",
+              }}
+            >
+              {deleteMode ? (
+                <AiFillDelete onClick={() => multiUserDelete()} />
+              ) : null}
+            </span>
+            {deleteMode ? (
+              <span
+                style={{
+                  fontSize: "25px",
+                  color: "green",
+                  cursor: "pointer",
+                }}
+              >
+                <MdCancel onClick={() => setDeleteMode(false)} />
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+
         <Table striped bordered hover style={{ marginTop: "20px" }}>
           <thead>
             <tr>
+              <th>Select</th>
               <th>No.</th>
               <th>Username</th>
               <th>Email</th>
@@ -89,12 +141,18 @@ const Dashboard = () => {
               return (
                 <React.Fragment>
                   <tr style={{ fontSize: "20px" }}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        onClick={() => multiUserSelect(item?.id)}
+                      />
+                    </td>
                     <td>{index + 1}</td>
 
                     {!editMode ? (
-                      <td id="oldName">{item?.displayName}</td>
+                      <td>{item?.displayName}</td>
                     ) : (
-                      <td id="newName">
+                      <td>
                         <input
                           value={name}
                           onChange={(e) => setName(e.target.value)}
@@ -103,9 +161,9 @@ const Dashboard = () => {
                     )}
 
                     {!editMode ? (
-                      <td id="oldEmail">{item?.email}</td>
+                      <td>{item?.email}</td>
                     ) : (
-                      <td id="newEmail">
+                      <td>
                         <input
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
@@ -114,7 +172,7 @@ const Dashboard = () => {
                     )}
                     <td>
                       <div className="delete-and-edit-div">
-                        <div onClick={() => deleteUsers(item?.id)}>
+                        <div>
                           <span
                             style={{
                               fontSize: "25px",
@@ -122,7 +180,13 @@ const Dashboard = () => {
                               cursor: "pointer",
                             }}
                           >
-                            <AiFillDelete />
+                            {!editMode ? (
+                              <AiFillDelete
+                                onClick={() => deleteUsers(item?.id)}
+                              />
+                            ) : (
+                              <MdCancel onClick={() => setEditMode(false)} />
+                            )}
                           </span>
                         </div>
                         <div>
