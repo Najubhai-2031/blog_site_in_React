@@ -6,7 +6,7 @@ import "./style.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useDispatch } from "react-redux";
-import { loginUser } from "../../store/user/UserAction";
+import { loginUser } from "../../../store/user/UserAction";
 
 const Login = (props) => {
   const [error, setError] = useState({});
@@ -20,48 +20,24 @@ const Login = (props) => {
     let isValid = loginValidation();
     if (isValid) {
       dispatch(loginUser({ email, pass }));
-      // signInWithEmailAndPassword(auth, email, pass)
-      //   .then((userCredential) => {
-      //     localStorage.setItem("user", JSON.stringify(userCredential));
-      //     const user = userCredential.user;
-      //     toast.success("Welcome Back!");
-      //     setTimeout(() => {
-      //       navigate("/");
-      //     }, 1000);
-      //   })
-      //   .catch((error) => {
-      //     const errorCode = error.code;
-      //     const errorMessage = error.message;
-      //     toast.error(`${errorCode} - ${errorMessage}`);
-      //   });
     }
   };
 
   const loginValidation = () => {
     let isValid = true;
     const errors = {};
-    // let localEmail = localStorage.getItem("email");
-    // let localPass = localStorage.getItem("pass");
 
     // Email Validation
     if (!email) {
       errors.email = "Please Enter Email";
       isValid = false;
     }
-    //  else if (email !== localEmail) {
-    //   errors.email = "Email not Register, Please Register First";
-    //   isValid = false;
-    // }
 
     // Password Validation
     if (!pass) {
       errors.pass = "Please Enter Password";
       isValid = false;
     }
-    //  else if (pass !== localPass) {
-    //   errors.pass = "Invalid Password";
-    //   isValid = false;
-    // }
     setError(errors);
     return isValid;
   };

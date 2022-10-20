@@ -1,4 +1,3 @@
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {
   addDoc,
   collection,
@@ -14,13 +13,13 @@ import {
 import React, { useEffect, useState } from "react";
 import { Button, Container, Form } from "react-bootstrap";
 import { AiFillDelete } from "react-icons/ai";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { toast, ToastContainer } from "react-toastify";
 import { db } from "../firebase/config";
 
 const Comments = (props) => {
-  const [name, setName] = useState("");
-  const [uid, setUid] = useState("");
+  const user = useSelector((state) => state?.user?.user);
   const [comment, setComment] = useState("");
   const [isLading, setIsLoading] = useState(true);
   const [comments, setCommments] = useState([]);
@@ -34,7 +33,7 @@ const Comments = (props) => {
       addDoc(collection(db, "Comments"), {
         comment: comment,
         timeStamp: Date.now(),
-        uId: uid,
+        uId: user?.uid,
         blogId: props?.id,
       }).then((docResponse) => {
         const docRef = doc(db, "Comments", docResponse?.id);
@@ -53,14 +52,6 @@ const Comments = (props) => {
   };
 
   const getComments = async () => {
-    const auth = getAuth();
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUid(user?.uid);
-        setName(user?.displayName);
-      } else {
-      }
-    });
     const querySnapshot = collection(db, "Comments");
     const data = await getDocs(
       query(
@@ -73,6 +64,7 @@ const Comments = (props) => {
     const getCommentUser = data.docs.map((userInfo) => {
       return userInfo.data()?.uId;
     });
+
     if (getCommentUser?.length) {
       const users = await getDocs(
         query(
@@ -85,12 +77,14 @@ const Comments = (props) => {
       const blogComments = data.docs.map((comment) => comment.data());
 
       const commentsData = data.docs
-        .map((blog) => {
-          const findUser = blogUsers.find((user) => user?.uId === user.uid);
+        .map((comment) => {
+          const findUser = blogUsers.find((user) => {
+            return user?.id === comment?.data().uId;
+          });
           const findComment = blogComments.filter(
-            (comment) => comment.blogId === blog.data().id
+            (current) => current.blogId === comment.data().id
           );
-          return { ...findUser, ...findComment, ...blog.data() };
+          return { ...findUser, ...findComment, ...comment.data() };
         })
         .sort((a, b) => b.timeStamp - a.timeStamp);
       setIsLoading(false);
@@ -117,6 +111,7 @@ const Comments = (props) => {
   useEffect(() => {
     getComments();
   }, []);
+
   return (
     <React.Fragment>
       <ToastContainer />
@@ -130,9 +125,9 @@ const Comments = (props) => {
             <div className="comment-inner">
               <div
                 className="name-show"
-                onClick={() => navigate(`/Profile/${uid}`)}
+                onClick={() => navigate(`/Profile/${user?.uid}`)}
               >
-                <span> {name}</span>
+                <span onClick={props?.modalShoww}> {user?.displayName}</span>
               </div>
               <div className="write-comment">
                 <Form.Group className="mb-3" controlId="formBasicDescription">
@@ -152,7 +147,7 @@ const Comments = (props) => {
                   type="submit"
                   className="update-btn me-2"
                 >
-                  Post Comment
+                  Post
                 </Button>
               </div>
             </div>
@@ -185,7 +180,9 @@ const Comments = (props) => {
                           className="name-and-date"
                           onClick={() => navigate(`/Profile/${item?.uId}`)}
                         >
-                          <span>{item?.displayName}</span>
+                          <span onClick={props?.modalShoww}>
+                            {item?.displayName}
+                          </span>
                         </div>
                         <div
                           className="commented-on"
@@ -202,7 +199,7 @@ const Comments = (props) => {
                           <p>{item?.comment}</p>
                         </div>
                       </div>
-                      {uid === item?.uId ? (
+                      {user?.uid === item?.uId ? (
                         <div className="delete-comment">
                           <AiFillDelete
                             onClick={() => handleDeleteComments(item?.id)}

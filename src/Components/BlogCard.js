@@ -1,16 +1,53 @@
 import React from "react";
 import "./style.css";
-import { Card, Container, Dropdown } from "react-bootstrap";
+import { Card, Dropdown } from "react-bootstrap";
 import { ArrowRight } from "react-bootstrap-icons";
 import { AiFillDelete, AiFillLike, AiOutlineEye } from "react-icons/ai";
 import { FaComment, FaPenNib } from "react-icons/fa";
 import { FiEdit } from "react-icons/fi";
 import { useNavigate } from "react-router";
+import { useSelector } from "react-redux";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { db } from "../firebase/config";
 
 const BlogCard = (props) => {
-  const { showContinueButton = true } = props;
-  const { showEditDeleteButton = true } = props;
+  const user = useSelector((state) => state?.user?.user);
+  const { showContinueButton = true, showEditDeleteButton = true } = props;
   const navigate = useNavigate("");
+
+  const handleCounteViews = async (id) => {
+    const docRef = doc(db, "Blog", id);
+    const docSnap = await getDoc(docRef);
+    const currentView = docSnap.data()?.views;
+    updateDoc(docRef, {
+      views: currentView + 1,
+    })
+      .then((res) => {})
+      .catch((err) => {});
+    navigate(`/Blog/${id}`);
+  };
+
+  const handleLike = async (id) => {
+    const docRef = doc(db, "Blog", id);
+    const docSnap = await getDoc(docRef);
+    const currentLikes = docSnap.data()?.likes;
+
+    if (!currentLikes.includes(user?.uid)) {
+      updateDoc(docRef, {
+        likes: [...currentLikes, user?.uid],
+      })
+        .then((res) => {})
+        .catch((err) => {});
+    } else {
+      const removedLikes = currentLikes.filter((item) => item !== user?.uid);
+      updateDoc(docRef, {
+        likes: [...removedLikes],
+      })
+        .then((res) => {})
+        .catch((err) => {});
+    }
+    props?.getAllData();
+  };
 
   return (
     <React.Fragment>
@@ -50,7 +87,7 @@ const BlogCard = (props) => {
                     <FaComment />
                     {props?.commentsLength}
                   </div>
-                  <div onClick={props?.handleLike}>
+                  <div onClick={() => handleLike(props?.id)}>
                     <AiFillLike
                       style={{
                         cursor: "pointer",
@@ -72,7 +109,7 @@ const BlogCard = (props) => {
                     {showContinueButton ? (
                       <Card.Text
                         className="read-more text-right"
-                        onClick={props?.handleNavigate}
+                        onClick={() => handleCounteViews(props?.id)}
                       >
                         Continue Reading
                         <ArrowRight />
@@ -84,7 +121,7 @@ const BlogCard = (props) => {
               <div>
                 {showEditDeleteButton ? (
                   <div>
-                    {props?.uid === props?.uid ? (
+                    {props?.uid === user?.uid ? (
                       <div className="three-dot">
                         <Dropdown>
                           <Dropdown.Toggle>

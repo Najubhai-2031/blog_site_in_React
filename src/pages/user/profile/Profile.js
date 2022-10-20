@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { HiOutlineMail } from "react-icons/hi";
 import { MdAlternateEmail } from "react-icons/md";
-import profile from "../../Images/profile.png";
+import profile from "../../../Images/profile.png";
 import Card from "react-bootstrap/Card";
 import "./style.css";
-import { useNavigate, useParams } from "react-router";
+import { useParams } from "react-router";
 import { Button, Container, Modal } from "react-bootstrap";
 import {
   collection,
@@ -14,33 +14,22 @@ import {
   getDocs,
   orderBy,
   query,
-  updateDoc,
   where,
 } from "firebase/firestore";
-import { db } from "../../firebase/config";
-import Comments from "../../Components/Comments";
-import BlogCard from "../../Components/BlogCard";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { db } from "../../../firebase/config";
+import Comments from "../../../Components/Comments";
+import BlogCard from "../../../Components/BlogCard";
+import { useSelector } from "react-redux";
 
 const Profile = (props) => {
   const { uid } = useParams();
   const [data, setData] = useState([]);
   const [user, setUser] = useState("");
-  const [uId, setUId] = useState("");
   const [isLading, setIsLoading] = useState(false);
   const [modalShow, setModalShow] = useState(false);
   const [commentId, setCommentId] = useState(null);
-  const navigate = useNavigate("");
 
-  const getCurruntUser = () => {
-    const auth = getAuth();
-    onAuthStateChanged(auth, (user) => {
-      if (user !== null) {
-        setUId(user.uid);
-      } else {
-      }
-    });
-  };
+  const users = useSelector((state) => state?.user?.user);
 
   const getUserData = async () => {
     const docRef = doc(db, "users", uid);
@@ -104,44 +93,9 @@ const Profile = (props) => {
     setCommentId(id);
   };
 
-  const handleNavigate = async (id) => {
-    const docRef = doc(db, "Blog", id);
-    const docSnap = await getDoc(docRef);
-    const currentView = docSnap.data()?.views;
-    updateDoc(docRef, {
-      views: currentView + 1,
-    })
-      .then((res) => {})
-      .catch((err) => {});
-    navigate(`/Blog/${id}`);
-  };
-
-  const handleLike = async (id) => {
-    const docRef = doc(db, "Blog", id);
-    const docSnap = await getDoc(docRef);
-    const currentLikes = docSnap.data()?.likes;
-
-    if (!currentLikes.includes(uId)) {
-      updateDoc(docRef, {
-        likes: [...currentLikes, uId],
-      })
-        .then((res) => {})
-        .catch((err) => {});
-    } else {
-      const removedLikes = currentLikes.filter((item) => item !== uId);
-      updateDoc(docRef, {
-        likes: [...removedLikes],
-      })
-        .then((res) => {})
-        .catch((err) => {});
-    }
-    getAllData();
-  };
-
   useEffect(() => {
     getAllData();
     getUserData();
-    getCurruntUser();
   }, [uid]);
 
   if (!isLading) {
@@ -220,12 +174,11 @@ const Profile = (props) => {
                             views={item?.views}
                             date={date?.toLocaleString()}
                             id={item?.id}
-                            handleLike={() => handleLike(item?.id)}
-                            handleNavigate={() => handleNavigate(item?.id)}
+                            // handleLike={() => handleLike(item?.id)}
                             handleOpenComments={() =>
                               handleOpenComments(item?.id)
                             }
-                            liked={item?.likes?.includes(uId)}
+                            liked={item?.likes?.includes(users?.uid)}
                             commentsLength={item?.comments?.length}
                             likes={item?.likes?.length}
                             showEditDeleteButton={false}
@@ -254,7 +207,11 @@ const Profile = (props) => {
           aria-labelledby="contained-modal-title-vcenter"
           centered
         >
-          <Comments id={commentId} getAllData={getAllData} />
+          <Comments
+            id={commentId}
+            modalShoww={() => setModalShow(false)}
+            getAllData={getAllData}
+          />
           <Modal.Footer>
             <Button show={modalShow} onClick={() => setModalShow(false)}>
               Close

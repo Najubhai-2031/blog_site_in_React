@@ -6,7 +6,7 @@ import "./style.css";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth, db } from "../../firebase/config";
+import { auth, db } from "../../../firebase/config";
 import { addDoc, collection, doc, setDoc } from "firebase/firestore";
 
 const Register = (props) => {
