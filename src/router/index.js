@@ -1,16 +1,19 @@
 import AuthenticationLayout from "../Components/layout/AuthenticationLayout";
 import MainLayout from "../Components/layout/MainLayout";
-import Profile from "../pages/profile/Profile";
-import ForgotPass from "../pages/forgotPass";
-import Home from "../pages/home";
-import Login from "../pages/login";
-import Register from "../pages/register";
-import AboutUs from "../pages/aboutUs/AboutUs";
-import BlogDetails from "../pages/blogDetails/BlogDetails";
+import Profile from "../pages/user/profile/Profile";
+import ForgotPass from "../pages/user/forgotPass";
+import Home from "../pages/user/home";
+import Login from "../pages/user/login";
+import Register from "../pages/user/register";
+import AboutUs from "../pages/user/aboutUs/AboutUs";
+import BlogDetails from "../pages/user/blogDetails/BlogDetails";
 import BlogCard from "../Components/BlogCard";
-import Users from "../pages/users";
+import FindUsers from "../pages/user/findUsers";
 import Admin from "../Components/layout/Admin";
-import Dashboard from "../pages/Dashboard";
+import Dashboard from "../pages/admin/Dashboard";
+import BlogsForAdmin from "../pages/admin/Dashboard/blogs";
+import UsersInfoForAdmin from "../pages/admin/Dashboard/usersInfo";
+import CommentsForAdmin from "../pages/admin/Dashboard/comments";
 
 const Router = [
   {
@@ -22,7 +25,7 @@ const Router = [
       { path: "/Blog/:id", element: <BlogDetails /> },
       { path: "/AboutUs", element: <AboutUs /> },
       { path: "/BlogCard", element: <BlogCard /> },
-      { path: "/Users", element: <Users /> },
+      { path: "/Users", element: <FindUsers /> },
     ],
   },
   {
@@ -37,7 +40,12 @@ const Router = [
   {
     path: "admin",
     element: <Admin />,
-    children: [{ path: "dashboard", element: <Dashboard /> }],
+    children: [
+      { path: "dashboard", element: <Dashboard /> },
+      { path: "blogs", element: <BlogsForAdmin /> },
+      { path: "users", element: <UsersInfoForAdmin /> },
+      { path: "Comments", element: <CommentsForAdmin /> },
+    ],
   },
 ];
 

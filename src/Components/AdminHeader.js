@@ -4,6 +4,7 @@ import { CgProfile } from "react-icons/cg";
 import { FiLogOut } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../store/user/UserAction";
+import AdminSidebar from "./AdminSidebar";
 
 const AdminHeader = () => {
   const user = useSelector((state) => state?.user?.user);
@@ -11,7 +12,8 @@ const AdminHeader = () => {
 
   return (
     <React.Fragment>
-      <Navbar bg="light" expand="lg">
+      
+      <Navbar bg="light" expand="lg" className="navbar-width">
         <Container>
           <Navbar.Brand href="">Stack Summation</Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />

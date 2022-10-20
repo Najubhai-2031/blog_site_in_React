@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { HiOutlineMail } from "react-icons/hi";
 import { MdAlternateEmail } from "react-icons/md";
-import profile from "../../Images/profile.png";
+import profile from "../../../Images/profile.png";
 import Card from "react-bootstrap/Card";
 import "./style.css";
 import { useParams } from "react-router";
@@ -16,9 +16,9 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import { db } from "../../firebase/config";
-import Comments from "../../Components/Comments";
-import BlogCard from "../../Components/BlogCard";
+import { db } from "../../../firebase/config";
+import Comments from "../../../Components/Comments";
+import BlogCard from "../../../Components/BlogCard";
 import { useSelector } from "react-redux";
 
 const Profile = (props) => {

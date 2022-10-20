@@ -1,5 +1,3 @@
-import React, { useEffect, useState } from "react";
-import { Container, Table } from "react-bootstrap";
 import {
   collection,
   deleteDoc,
@@ -7,99 +5,100 @@ import {
   getDocs,
   query,
   runTransaction,
-  where,
 } from "firebase/firestore";
-import { db } from "../../firebase/config";
+import React, { useEffect, useState } from "react";
+import { Table, ToastContainer } from "react-bootstrap";
 import { AiFillDelete } from "react-icons/ai";
 import { BsCheckCircleFill } from "react-icons/bs";
 import { FiEdit } from "react-icons/fi";
 import { MdCancel } from "react-icons/md";
-import "./style.css";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
+import { db } from "../../../../firebase/config";
 
-const Dashboard = () => {
-  const [users, setUsers] = useState([]);
+const BlogsForAdmin = () => {
+  const [blogs, setBlogs] = useState([]);
   const [editMode, setEditMode] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
-  const [uids, setUids] = useState([]);
+  const [ids, setIds] = useState([]);
   const [id, setId] = useState("");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
 
-  const getAllUsers = async () => {
-    const userss = await getDocs(
-      query(collection(db, "users"), where("role", "==", "user"))
-    );
-    const blogUsers = userss.docs.map((user) => user.data());
-    setUsers(blogUsers);
+  const getAllBlogs = async () => {
+    const blogs = await getDocs(query(collection(db, "Blog")));
+    const allBlogs = blogs.docs.map((blog) => blog.data());
+    setBlogs(allBlogs);
   };
 
-  const deleteUsers = async (uid) => {
-    await deleteDoc(doc(db, "users", uid));
-    toast.error("User Deleted Successefully");
-    getAllUsers();
+  const deleteBlog = async (id) => {
+    await deleteDoc(doc(db, "Blog", id));
+    toast.error("Blog Deleted Successefully");
+    getAllBlogs();
   };
 
-  const handleEditUserData = async (name, email, id) => {
+  const handleEditBlogData = async (title, description, id) => {
     setEditMode(true);
     setId(id);
-    setName(name);
-    setEmail(email);
+    setTitle(title);
+    setDescription(description);
   };
 
-  const handleUpdateUserData = async () => {
-    const sfDocRef = doc(db, "users", id);
+  const multiBlogsDelete = () => {
+    setDeleteMode(false);
+    ids.forEach(async (singleid) => {
+      toast.error("Blog Deleted Successefully");
+      await deleteDoc(doc(db, "Blog", singleid));
+      getAllBlogs();
+    });
+  };
+
+  const multiBlogsSelect = (id) => {
+    setDeleteMode(true);
+    const tempIds = [...ids];
+    if (!ids.includes(id)) {
+      tempIds.push(id);
+    } else {
+      const index = tempIds.findIndex((item) => item === id);
+      tempIds.splice(index, 1);
+    }
+    setIds(tempIds);
+  };
+
+  const handleUpdateBlogData = async () => {
+    const sfDocRef = doc(db, "Blog", id);
     try {
       await runTransaction(db, async (transaction) => {
         const sfDoc = await transaction.get(sfDocRef);
         if (!sfDoc.exists()) {
           throw "Document does not exist!";
         }
-        const newName = (sfDoc.data().displayName = name);
-        const newEmail = (sfDoc.data().email = email);
+        const newTitle = (sfDoc.data().title = title);
+        const newDescription = (sfDoc.data().description = description);
         transaction.update(sfDocRef, {
-          displayName: newName,
-          email: newEmail,
+          title: newTitle,
+          description: newDescription,
         });
       });
-      toast.success("User Info Updated Successefully");
+      toast.success("Blog Updated Successefully");
       setEditMode(false);
-      getAllUsers();
+      getAllBlogs();
     } catch (e) {
-      toast.error("Transaction failed: ", e);
+      toast.error(e);
     }
-  };
-
-  const multiUserDelete = () => {
-    setDeleteMode(false);
-    uids.forEach(async (singleUid) => {
-      await deleteDoc(doc(db, "users", singleUid));
-      toast.error("User Deleted Successefully");
-      getAllUsers();
-    });
-  };
-
-  const multiUserSelect = (id) => {
-    setDeleteMode(true);
-    const tempUids = [...uids];
-    if (!uids.includes(id)) {
-      tempUids.push(id);
-    } else {
-      const index = tempUids.findIndex((item) => item === id);
-      tempUids.splice(index, 1);
-    }
-    setUids(tempUids);
   };
 
   useEffect(() => {
-    getAllUsers();
+    getAllBlogs();
   }, []);
 
   return (
     <React.Fragment>
-      <ToastContainer />
-      <Container>
-        {uids.length ? (
+        <ToastContainer />
+      <div className="margin-left">
+      <div>
+          <h3>Blogs</h3>
+        </div>
+        {ids.length ? (
           <div className="text-right">
             <span
               style={{
@@ -109,7 +108,7 @@ const Dashboard = () => {
               }}
             >
               {deleteMode ? (
-                <AiFillDelete onClick={() => multiUserDelete()} />
+                <AiFillDelete onClick={() => multiBlogsDelete()} />
               ) : null}
             </span>
             {deleteMode ? (
@@ -137,38 +136,42 @@ const Dashboard = () => {
             </tr>
           </thead>
           <tbody>
-            {users.map((item, index) => {
+            {blogs.map((item, index) => {
               return (
                 <React.Fragment>
                   <tr style={{ fontSize: "20px" }}>
                     <td>
                       <input
                         type="checkbox"
-                        onClick={() => multiUserSelect(item?.id)}
+                        onClick={() => multiBlogsSelect(item?.id)}
                       />
                     </td>
                     <td>{index + 1}</td>
 
                     {!editMode ? (
-                      <td>{item?.displayName}</td>
-                    ) : (
+                      <td>{`${item?.title.slice(0, 20)}...`}</td>
+                    ) : item?.id === id ? (
                       <td>
                         <input
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
                         />
                       </td>
+                    ) : (
+                      <td>{`${item?.title.slice(0, 20)}...`}</td>
                     )}
 
                     {!editMode ? (
-                      <td>{item?.email}</td>
-                    ) : (
+                      <td>{`${item?.description.slice(0, 30)}...`}</td>
+                    ) : item?.id === id ? (
                       <td>
                         <input
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
                         />
                       </td>
+                    ) : (
+                      <td>{`${item?.description.slice(0, 30)}...`}</td>
                     )}
                     <td>
                       <div className="delete-and-edit-div">
@@ -182,7 +185,7 @@ const Dashboard = () => {
                           >
                             {!editMode ? (
                               <AiFillDelete
-                                onClick={() => deleteUsers(item?.id)}
+                                onClick={() => deleteBlog(item?.id)}
                               />
                             ) : (
                               <MdCancel onClick={() => setEditMode(false)} />
@@ -208,16 +211,16 @@ const Dashboard = () => {
                             {!editMode ? (
                               <FiEdit
                                 onClick={() =>
-                                  handleEditUserData(
-                                    item?.displayName,
-                                    item?.email,
+                                  handleEditBlogData(
+                                    item?.title,
+                                    item?.description,
                                     item?.id
                                   )
                                 }
                               />
                             ) : (
                               <BsCheckCircleFill
-                                onClick={() => handleUpdateUserData()}
+                                onClick={() => handleUpdateBlogData()}
                               />
                             )}
                           </span>
@@ -230,9 +233,9 @@ const Dashboard = () => {
             })}
           </tbody>
         </Table>
-      </Container>
+      </div>
     </React.Fragment>
   );
 };
 
-export default Dashboard;
+export default BlogsForAdmin;

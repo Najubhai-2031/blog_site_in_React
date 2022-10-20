@@ -2,9 +2,9 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import React, { useState } from "react";
 import { Button, Card, Container, Form } from "react-bootstrap";
 import "./style.css";
-import { db } from "../../firebase/config";
+import { db } from "../../../firebase/config";
 
-const Users = () => {
+const FindUsers = () => {
   const [userss, setUserss] = useState("");
 
   const getUsersByName = async (search) => {
@@ -55,4 +55,4 @@ const Users = () => {
   );
 };
 
-export default Users;
+export default FindUsers;

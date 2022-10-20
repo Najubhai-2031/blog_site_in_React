@@ -13,14 +13,14 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { db } from "../../firebase/config";
+import { db } from "../../../firebase/config";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { toast, ToastContainer } from "react-toastify";
 import { Container, Modal } from "react-bootstrap";
 import "./style.css";
-import Comments from "../../Components/Comments";
-import BlogCard from "../../Components/BlogCard";
+import Comments from "../../../Components/Comments";
+import BlogCard from "../../../Components/BlogCard";
 import { useSelector } from "react-redux";
 
 const BlogDetails = () => {

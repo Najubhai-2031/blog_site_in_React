@@ -17,10 +17,10 @@ import Form from "react-bootstrap/Form";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { db } from "../../firebase/config";
+import { db } from "../../../firebase/config";
 import "./homestyle.css";
-import BlogCard from "../../Components/BlogCard";
-import Comments from "../../Components/Comments";
+import BlogCard from "../../../Components/BlogCard";
+import Comments from "../../../Components/Comments";
 import { useSelector } from "react-redux";
 
 const Home = () => {

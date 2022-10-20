@@ -6,7 +6,7 @@ import "./style.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useDispatch } from "react-redux";
-import { loginUser } from "../../store/user/UserAction";
+import { loginUser } from "../../../store/user/UserAction";
 
 const Login = (props) => {
   const [error, setError] = useState({});
