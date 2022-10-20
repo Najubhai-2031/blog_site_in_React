@@ -19,6 +19,7 @@ const BlogsForAdmin = () => {
   const [blogs, setBlogs] = useState([]);
   const [editMode, setEditMode] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [ids, setIds] = useState([]);
   const [id, setId] = useState("");
   const [title, setTitle] = useState("");
@@ -28,6 +29,7 @@ const BlogsForAdmin = () => {
     const blogs = await getDocs(query(collection(db, "Blog")));
     const allBlogs = blogs.docs.map((blog) => blog.data());
     setBlogs(allBlogs);
+    setIsLoading(true);
   };
 
   const deleteBlog = async (id) => {
@@ -91,151 +93,183 @@ const BlogsForAdmin = () => {
     getAllBlogs();
   }, []);
 
-  return (
-    <React.Fragment>
+  if (!isLoading) {
+    return (
+      <React.Fragment>
         <ToastContainer />
-      <div className="margin-left">
-      <div>
-          <h3>Blogs</h3>
+        <div className="margin-left">
+          <div>
+            <h3>Blogs</h3>
+          </div>
+          <div className="text-center">
+            <h5>Loading...</h5>
+          </div>
         </div>
-        {ids.length ? (
-          <div className="text-right">
-            <span
-              style={{
-                fontSize: "25px",
-                color: "red",
-                cursor: "pointer",
-              }}
-            >
-              {deleteMode ? (
-                <AiFillDelete onClick={() => multiBlogsDelete()} />
-              ) : null}
-            </span>
-            {deleteMode ? (
+      </React.Fragment>
+    );
+  } else {
+    return (
+      <React.Fragment>
+        <ToastContainer />
+        <div className="margin-left">
+          <div>
+            <h3>Blogs</h3>
+            <span style={{ fontWeight: "500" }}>Total Blogs: </span>
+            {blogs.length}
+          </div>
+          {ids.length ? (
+            <div className="text-right">
               <span
                 style={{
                   fontSize: "25px",
-                  color: "green",
+                  color: "red",
                   cursor: "pointer",
                 }}
               >
-                <MdCancel onClick={() => setDeleteMode(false)} />
+                {deleteMode ? (
+                  <AiFillDelete onClick={() => multiBlogsDelete()} />
+                ) : null}
               </span>
-            ) : null}
-          </div>
-        ) : null}
+              {deleteMode ? (
+                <span
+                  style={{
+                    fontSize: "25px",
+                    color: "green",
+                    cursor: "pointer",
+                  }}
+                >
+                  <MdCancel onClick={() => setDeleteMode(false)} />
+                </span>
+              ) : null}
+            </div>
+          ) : null}
 
-        <Table striped bordered hover style={{ marginTop: "20px" }}>
-          <thead>
-            <tr>
-              <th>Select</th>
-              <th>No.</th>
-              <th>Username</th>
-              <th>Email</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {blogs.map((item, index) => {
-              return (
+          <Table striped bordered hover style={{ marginTop: "20px" }}>
+            <thead>
+              <tr>
+                <th>Select</th>
+                <th>No.</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {blogs.length ? (
+                <>
+                  {blogs.map((item, index) => {
+                    return (
+                      <React.Fragment>
+                        <tr style={{ fontSize: "20px" }}>
+                          <td>
+                            <input
+                              type="checkbox"
+                              onClick={() => multiBlogsSelect(item?.id)}
+                            />
+                          </td>
+                          <td>{index + 1}</td>
+
+                          {!editMode ? (
+                            <td>{`${item?.title.slice(0, 20)}...`}</td>
+                          ) : item?.id === id ? (
+                            <td>
+                              <input
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                              />
+                            </td>
+                          ) : (
+                            <td>{`${item?.title.slice(0, 20)}...`}</td>
+                          )}
+
+                          {!editMode ? (
+                            <td>{`${item?.description.slice(0, 30)}...`}</td>
+                          ) : item?.id === id ? (
+                            <td>
+                              <input
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                              />
+                            </td>
+                          ) : (
+                            <td>{`${item?.description.slice(0, 30)}...`}</td>
+                          )}
+                          <td>
+                            <div className="delete-and-edit-div">
+                              <div>
+                                <span
+                                  style={{
+                                    fontSize: "25px",
+                                    color: "red",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  {!editMode ? (
+                                    <AiFillDelete
+                                      onClick={() => deleteBlog(item?.id)}
+                                    />
+                                  ) : (
+                                    <MdCancel
+                                      onClick={() => setEditMode(false)}
+                                    />
+                                  )}
+                                </span>
+                              </div>
+                              <div>
+                                <hr
+                                  style={{
+                                    transform: "rotate(90deg)",
+                                    width: "25px",
+                                  }}
+                                />
+                              </div>
+                              <div>
+                                <span
+                                  style={{
+                                    fontSize: "25px",
+                                    color: "green",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  {!editMode ? (
+                                    <FiEdit
+                                      onClick={() =>
+                                        handleEditBlogData(
+                                          item?.title,
+                                          item?.description,
+                                          item?.id
+                                        )
+                                      }
+                                    />
+                                  ) : (
+                                    <BsCheckCircleFill
+                                      onClick={() => handleUpdateBlogData()}
+                                    />
+                                  )}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      </React.Fragment>
+                    );
+                  })}
+                </>
+              ) : (
                 <React.Fragment>
-                  <tr style={{ fontSize: "20px" }}>
-                    <td>
-                      <input
-                        type="checkbox"
-                        onClick={() => multiBlogsSelect(item?.id)}
-                      />
-                    </td>
-                    <td>{index + 1}</td>
-
-                    {!editMode ? (
-                      <td>{`${item?.title.slice(0, 20)}...`}</td>
-                    ) : item?.id === id ? (
-                      <td>
-                        <input
-                          value={title}
-                          onChange={(e) => setTitle(e.target.value)}
-                        />
-                      </td>
-                    ) : (
-                      <td>{`${item?.title.slice(0, 20)}...`}</td>
-                    )}
-
-                    {!editMode ? (
-                      <td>{`${item?.description.slice(0, 30)}...`}</td>
-                    ) : item?.id === id ? (
-                      <td>
-                        <input
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
-                        />
-                      </td>
-                    ) : (
-                      <td>{`${item?.description.slice(0, 30)}...`}</td>
-                    )}
-                    <td>
-                      <div className="delete-and-edit-div">
-                        <div>
-                          <span
-                            style={{
-                              fontSize: "25px",
-                              color: "red",
-                              cursor: "pointer",
-                            }}
-                          >
-                            {!editMode ? (
-                              <AiFillDelete
-                                onClick={() => deleteBlog(item?.id)}
-                              />
-                            ) : (
-                              <MdCancel onClick={() => setEditMode(false)} />
-                            )}
-                          </span>
-                        </div>
-                        <div>
-                          <hr
-                            style={{
-                              transform: "rotate(90deg)",
-                              width: "25px",
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <span
-                            style={{
-                              fontSize: "25px",
-                              color: "green",
-                              cursor: "pointer",
-                            }}
-                          >
-                            {!editMode ? (
-                              <FiEdit
-                                onClick={() =>
-                                  handleEditBlogData(
-                                    item?.title,
-                                    item?.description,
-                                    item?.id
-                                  )
-                                }
-                              />
-                            ) : (
-                              <BsCheckCircleFill
-                                onClick={() => handleUpdateBlogData()}
-                              />
-                            )}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
+                  <div className="margin-left">
+                    <div className="text-center">
+                      <h5>No Blogs Found!!!</h5>
+                    </div>
+                  </div>
                 </React.Fragment>
-              );
-            })}
-          </tbody>
-        </Table>
-      </div>
-    </React.Fragment>
-  );
+              )}
+            </tbody>
+          </Table>
+        </div>
+      </React.Fragment>
+    );
+  }
 };
 
 export default BlogsForAdmin;
